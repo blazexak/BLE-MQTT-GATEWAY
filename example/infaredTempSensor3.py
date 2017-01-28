@@ -1,14 +1,22 @@
 import BLE_MQTT_GATEWAY as gateway
-import paho.mqtt.client as mqtt
 import bluepy
 import threading
 import binascii
+import sys
+import time
+
+if(len(sys.argv) == 2 and sys.argv[1] == "test"):
+    pass
+elif(len(sys.argv) == 1):
+    time.sleep(120)
 
 DEVICE_NAME = "Infared Temperature Sensor"
 MAC_ADDRESS = "04:A3:16:9B:0C:83"
 DEVICE_TYPE = "NULL"
-BLE_HANDLE = [52,56]
-MQTT_SERVER = "192.168.42.1"
+#BLE_HANDLE = [52,56]
+BLE_HANDLE = [52]
+
+MQTT_SERVER = "192.168.1.9"
 MQTT_SUBSCRIBING_TOPIC = ["test"]
 VERBOSE = 0
 
@@ -29,7 +37,7 @@ class BLE_delegate(bluepy.btle.DefaultDelegate):
             print("Handle: ", cHandle)
             
         payload = self.binasciiToString(data)
-        self.client.publish("test", payload)
+        self.client.publish("test: ", time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + payload)
         
 class MQTT_delegate(object):
     def __init__(self):
@@ -37,14 +45,25 @@ class MQTT_delegate(object):
     
     def handleNotification(self, client, uerdata, msg):
         print(msg.topic+" "+str(msg.payload)) 
-        
-mqtt_gateway = gateway.MQTT_GATEWAY(MQTT_SERVER, MQTT_SUBSCRIBING_TOPIC, MQTT_delegate().handleNotification)
-threading.Thread(target=mqtt_gateway.client.loop_forever).start()
-ble_delegate = BLE_delegate(mqtt_gateway.client)
-ble_gateway = gateway.BLE_GATEWAY(DEVICE_NAME, MAC_ADDRESS, DEVICE_TYPE,)
-threading.Thread(target = ble_gateway.data_logger_thread,args=(ble_delegate, BLE_HANDLE,)).start()
-status = ble_gateway.data_updater(67, "60")
-print(status)
 
+if(__name__ == "__main__"):
+    try:
+        mqtt_gateway = gateway.MQTT_GATEWAY(MQTT_SERVER, MQTT_SUBSCRIBING_TOPIC, MQTT_delegate().handleNotification)
+        threading.Thread(target=mqtt_gateway.client.loop_forever).start()
+        ble_delegate = BLE_delegate(mqtt_gateway.client)
+        ble_gateway = gateway.BLE_GATEWAY(DEVICE_NAME, MAC_ADDRESS, DEVICE_TYPE,)
+        threading.Thread(target = ble_gateway.data_logger_thread,args=(ble_delegate, BLE_HANDLE,)).start()
+        if(len(sys.argv) == 2 and sys.argv[1].isdigit() == True):
+            status = ble_gateway.data_updater(67, sys.argv[1])
+            print "Sensor polling interval: ", sys.argv[1], "Status: ", status
+        while True:
+            pass
+
+    except KeyboardInterrupt:
+        mqtt_gateway.client.disconnect()
+        sys.exit()
+
+    except:
+        raise
     
 
