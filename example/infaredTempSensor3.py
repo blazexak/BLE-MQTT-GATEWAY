@@ -1,10 +1,9 @@
 import sys
-sys.path(0,'/home/pi/git-repos/BLE-MQTT-GATEWAY/src')
+sys.path[0] = "/home/pi/git-repos/BLE-MQTT-GATEWAY/src"
 import BLE_MQTT_GATEWAY as gateway
 import bluepy
 import threading
 import binascii
-
 import time
 
 if(len(sys.argv) == 2 and sys.argv[1] == "test"):
