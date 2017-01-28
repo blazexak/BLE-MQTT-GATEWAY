@@ -1,4 +1,5 @@
 import sys
+sys.path[0] = "/home/pi/git-repos/BLE-MQTT-GATEWAY/src"
 import BLE_MQTT_GATEWAY as gateway
 import bluepy
 import threading
