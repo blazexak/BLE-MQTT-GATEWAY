@@ -2,6 +2,7 @@ import bluepy
 import struct
 import sys
 import paho.mqtt.client as mqtt
+import threading
 
 class BLE_GATEWAY(object):
     
@@ -9,7 +10,8 @@ class BLE_GATEWAY(object):
         self.name = BLE_DEVICE_NAME
         self.mac = BLE_MAC_ADDRESS
         self.device_type = BLE_DEVICE_TYPE
-        self.polling_rate = -1
+        self.BLE_lock = threading.Lock()
+        self.connected_event = threading.Event()
            
     def data_logger_thread(self, BTLE_DELEGATE_CLASS, BLE_HANDLE):
         """
@@ -33,12 +35,14 @@ class BLE_GATEWAY(object):
         while True:
             try:
                 self.device = bluepy.btle.Peripheral(self.mac)
+                self.connected_event.set()
                 print("Connected.")
                 connection = True
                 self.delegate = BTLE_DELEGATE_CLASS
                 self.device.setDelegate(self.delegate)
                 for handle in self.handle:
-                    self.device.writeCharacteristic(handle, struct.pack('<bb',0x01,0x00), True)
+                    with self.BLE_lock:
+                        self.device.writeCharacteristic(handle, struct.pack('<bb',0x01,0x00), True)
                 
                 while True:
                     self.notification = self.device.waitForNotifications(1)
@@ -51,6 +55,7 @@ class BLE_GATEWAY(object):
                     if(connection == True):
                         print("BLE device disconnected.")
                         connection = False
+                        self.connected_event.clear()
                     continue
                 else:
                     raise       
@@ -58,7 +63,13 @@ class BLE_GATEWAY(object):
                 print sys.exc_info()[0]
                 raise
             
-#     def data
+
+            
+    def set_polling_rate(self, handle, rate):
+        with self.BLE_lock:
+            self.connected_event.wait()
+            self.device.writeCharacteristic(handle, rate, True)
+            print "Polling rate updated to ", rate
         
     def data_updater(self, BLE_HANDLE, DATA):
         """

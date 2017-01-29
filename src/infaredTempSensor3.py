@@ -38,7 +38,7 @@ class BLE_delegate(bluepy.btle.DefaultDelegate):
             print("Handle: ", cHandle)
             
         payload = self.binasciiToString(data)
-        self.client.publish(MQTT_SUBSCRIBING_TOPIC[0], time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + payload)
+        self.client.publish(MQTT_SUBSCRIBING_TOPIC[0], time.strftime("%Y-%m-%d %H:%M:%S ", time.gmtime()) + payload)
         
 class MQTT_delegate(object):
     def __init__(self):
@@ -54,6 +54,7 @@ if(__name__ == "__main__"):
         ble_delegate = BLE_delegate(mqtt_gateway.client)
         ble_gateway = gateway.BLE_GATEWAY(DEVICE_NAME, MAC_ADDRESS, DEVICE_TYPE,)
         threading.Thread(target = ble_gateway.data_logger_thread,args=(ble_delegate, BLE_HANDLE,)).start()
+        ble_gateway.set_polling_rate(67, "15")
         if(len(sys.argv) == 2 and sys.argv[1].isdigit() == True):
             status = ble_gateway.data_updater(67, sys.argv[1])
             print "Sensor polling interval: ", sys.argv[1], "Status: ", status
