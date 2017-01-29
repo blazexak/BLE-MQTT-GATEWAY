@@ -14,8 +14,8 @@ elif(len(sys.argv) == 1):
 DEVICE_NAME = "Infared Temperature Sensor"
 MAC_ADDRESS = "04:A3:16:9B:0C:83"
 DEVICE_TYPE = "NULL"
-#BLE_HANDLE = [52,56]
-BLE_HANDLE = [52]
+BLE_HANDLE = [52,56]
+#BLE_HANDLE = [52]
 
 MQTT_SERVER = "192.168.1.9"
 MQTT_SUBSCRIBING_TOPIC = ["test"]

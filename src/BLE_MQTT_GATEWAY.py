@@ -43,7 +43,7 @@ class BLE_GATEWAY(object):
                     self.notification = self.device.waitForNotifications(1)
                     if(self.notification == True):
                         pass
-                        #print("Data received.")
+                        print("Data received.")
             except bluepy.btle.BTLEException as e:
                 #print e.message, e.code
                 if(e.code == 1):
