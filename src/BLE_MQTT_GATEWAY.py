@@ -9,6 +9,7 @@ class BLE_GATEWAY(object):
         self.name = BLE_DEVICE_NAME
         self.mac = BLE_MAC_ADDRESS
         self.device_type = BLE_DEVICE_TYPE
+        self.polling_rate = -1
            
     def data_logger_thread(self, BTLE_DELEGATE_CLASS, BLE_HANDLE):
         """
@@ -43,7 +44,7 @@ class BLE_GATEWAY(object):
                     self.notification = self.device.waitForNotifications(1)
                     if(self.notification == True):
                         pass
-                        print("Data received.")
+#                         print("Data received.")
             except bluepy.btle.BTLEException as e:
                 #print e.message, e.code
                 if(e.code == 1):
@@ -56,6 +57,8 @@ class BLE_GATEWAY(object):
             except:
                 print sys.exc_info()[0]
                 raise
+            
+#     def data
         
     def data_updater(self, BLE_HANDLE, DATA):
         """
