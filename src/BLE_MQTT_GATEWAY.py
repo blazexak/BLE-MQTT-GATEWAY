@@ -31,31 +31,41 @@ class BLE_GATEWAY(object):
             print("Invalid data type for BLE_HANDLE")
         
         print("Connecting to BLE device.")
-        connection = ""    
+        connection = False  
+        error_code = 0
         while True:
             try:
-                self.device = bluepy.btle.Peripheral(self.mac)
-                self.connected_event.set()
-                print("Connected.")
-                connection = True
-                self.delegate = BTLE_DELEGATE_CLASS
-                self.device.setDelegate(self.delegate)
-                for handle in self.handle:
-                    with self.BLE_lock:
-                        self.device.writeCharacteristic(handle, struct.pack('<bb',0x01,0x00), True)
+                if(connection == False):
+                    self.device = bluepy.btle.Peripheral(self.mac)
+                    self.connected_event.set()
+                    print("Connected.")
+                    connection = True
+                    self.delegate = BTLE_DELEGATE_CLASS
+                    self.device.setDelegate(self.delegate)
+                    for handle in self.handle:
+                        with self.BLE_lock:
+                            self.device.writeCharacteristic(handle, struct.pack('<bb',0x01,0x00), True)
+#                 elif(error_code == 3):
+#                     for handle in self.handle:
+#                         with self.BLE_lock:
+#                             self.device.writeCharacteristic(handle, struct.pack('<bb',0x01,0x00), True)                    
                 
                 while True:
-                    self.notification = self.device.waitForNotifications(1)
-                    if(self.notification == True):
-                        pass
+                    with self.BLE_lock:
+                        self.notification = self.device.waitForNotifications(1)
+                        if(self.notification == True):
+                            pass
 #                         print("Data received.")
             except bluepy.btle.BTLEException as e:
-                #print e.message, e.code
+                print e.message, e.code
                 if(e.code == 1):
                     if(connection == True):
                         print("BLE device disconnected.")
                         connection = False
                         self.connected_event.clear()
+                    continue
+                if(e.code == 3):
+                    print "Unexpected response received. Retry without reconnecting."                
                     continue
                 else:
                     raise       
@@ -70,6 +80,12 @@ class BLE_GATEWAY(object):
             self.connected_event.wait()
             self.device.writeCharacteristic(handle, rate, True)
             print "Polling rate updated to ", rate
+            
+    def set_data(self, handle, data):
+        with self.BLE_lock:
+            self.connected_event.wait()
+            self.device.writeCharacteristic(handle, data, True)
+            print "Data set: ", data    
         
     def data_updater(self, BLE_HANDLE, DATA):
         """
