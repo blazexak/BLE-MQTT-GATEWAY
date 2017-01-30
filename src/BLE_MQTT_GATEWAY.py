@@ -3,6 +3,8 @@ import struct
 import sys
 import paho.mqtt.client as mqtt
 import threading
+import time
+from bluepy.btle import BTLEException
 
 class BLE_GATEWAY(object):
     
@@ -21,18 +23,18 @@ class BLE_GATEWAY(object):
         4. BLOCKING/POLLING
         5. PUBLISH TO MQTT topics
         """
-        self.handle = []        
+        self.delegate = BTLE_DELEGATE_CLASS
+        self.delegate_handle = []        
         if(isinstance(BLE_HANDLE, int) == True):
-            self.handle.insert(len(self.handle), BLE_HANDLE)
+            self.delegate_handle.insert(len(self.delegate_handle), BLE_HANDLE)
         elif(isinstance(BLE_HANDLE, list) == True):
-            for handle in BLE_HANDLE:
-                self.handle.insert(len(self.handle), handle)
+            for delegate_handle in BLE_HANDLE:
+                self.delegate_handle.insert(len(self.delegate_handle), delegate_handle)
         else:
             print("Invalid data type for BLE_HANDLE")
         
         print("Connecting to BLE device.")
         connection = False  
-        error_code = 0
         while True:
             try:
                 if(connection == False):
@@ -40,15 +42,7 @@ class BLE_GATEWAY(object):
                     self.connected_event.set()
                     print("Connected.")
                     connection = True
-                    self.delegate = BTLE_DELEGATE_CLASS
-                    self.device.setDelegate(self.delegate)
-                    for handle in self.handle:
-                        with self.BLE_lock:
-                            self.device.writeCharacteristic(handle, struct.pack('<bb',0x01,0x00), True)
-#                 elif(error_code == 3):
-#                     for handle in self.handle:
-#                         with self.BLE_lock:
-#                             self.device.writeCharacteristic(handle, struct.pack('<bb',0x01,0x00), True)                    
+                    self.set_delegate() # Set delegates assigned in self.handle list              
                 
                 while True:
                     with self.BLE_lock:
@@ -73,13 +67,65 @@ class BLE_GATEWAY(object):
                 print sys.exc_info()[0]
                 raise
             
-
+    def reset_connection(self):
+        self.device.disconnect()
+        time.sleep(3)
+        self.reconnect_persistent()
+        self.set_delegate()   
+        
+    def reconnect_persistent(self):
+        while True:
+            try:
+                self.device.connect(self.mac)
+                break
+            except BTLEException as e:
+                print e.code, e.message
+                if(e.code == 1):
+                    continue
+                else:
+                    raise            
+                    
+    def set_delegate(self):
+        self.device.setDelegate(self.delegate)
+        for delegate_handle in self.delegate_handle:
+            
+            while True:
+                try:
+                    self.device.writeCharacteristic(delegate_handle, struct.pack('<bb',0x01,0x00), True)      
+                    break
+                except BTLEException as e: 
+                    print e.code, e.message  
+                    if(e.code == 1):
+                        continue
+                    elif(e.message == "Helper not started (did you call connect()?)"):
+                            self.reconnect_persistent()
+                            continue
+                    else:
+                        raise                     
             
     def set_polling_rate(self, handle, rate):
-        with self.BLE_lock:
-            self.connected_event.wait()
-            self.device.writeCharacteristic(handle, rate, True)
-            print "Polling rate updated to ", rate
+        if(type(rate) == str and rate.isdigit() == True):
+            with self.BLE_lock:
+                self.connected_event.wait()
+                
+                while True:
+                    try:
+                        self.device.writeCharacteristic(handle, rate, True)      
+                        break
+                    except BTLEException as e: 
+                        print e.code, e.message  
+                        if(e.code == 1):
+                            continue
+                        elif(e.message == "Helper not started (did you call connect()?)"):
+                            self.reconnect_persistent()
+                            continue
+                        else:
+                            raise                    
+                
+                print "Polling rate updated to ", rate
+                self.reset_connection()
+                
+
             
     def set_data(self, handle, data):
         with self.BLE_lock:
