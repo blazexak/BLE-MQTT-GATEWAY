@@ -19,9 +19,9 @@ elif(len(sys.argv) == 1):
 DEVICE_NAME = "E-Ink Display"
 MAC_ADDRESS = "D0:39:72:C9:99:A2"
 DEVICE_TYPE = "NULL"
-HANDLE = [51, 55, 59, 63, 67]
+BLE_HANDLE = [51, 55, 59, 63, 67]
 
-MQTT_SERVER = "192.168.1.9"
+MQTT_SERVER = "192.168.1.6"
 MQTT_SUBSCRIBING_TOPIC = ["bean/eink"]
 VERBOSE = 0
 

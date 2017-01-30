@@ -174,13 +174,13 @@ class BLE_GATEWAY(object):
                 return 0
                     
             except bluepy.btle.BTLEException as e:
+                print e.message, e.code
                 if(e.code == 1):
                     if(connection == True):
                         print("BLE device disconnected.")
                         connection = False
                     continue
                 else:
-                    print e.message, e.code
                     raise       
             except:
                 print sys.exc_info()[0]
