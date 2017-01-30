@@ -118,7 +118,7 @@ class BLE_GATEWAY(object):
                             continue
                         elif(e.message == "Helper not started (did you call connect()?)"):
                             self.reconnect_persistent()
-                            continue
+                            continue 
                         else:
                             raise                    
                 
@@ -139,7 +139,16 @@ class BLE_GATEWAY(object):
         2. BLE.WRITE TO HANDLE
         3. TRIGGER BLE WAKE BY DISCONNECTING AND RECONNECTING
         """
-        self.data = DATA
+        self.data = []     
+        if(isinstance(DATA, str) == True):
+            self.data.insert(len(self.data), DATA)
+        elif(isinstance(DATA, list) == True):
+            for data in DATA:
+                self.data.insert(len(self.data), data)
+        else:
+            print("Invalid data type for DATA")
+            raise        
+        
         self.handle = []        
         if(isinstance(BLE_HANDLE, int) == True):
             self.handle.insert(len(self.handle), BLE_HANDLE)
@@ -148,6 +157,11 @@ class BLE_GATEWAY(object):
                 self.handle.insert(len(self.handle), handle)
         else:
             print("Invalid data type for BLE_HANDLE")
+            raise
+        
+        if(len(self.data) != len(self.handle)):
+            print("Length of data and handle not equal.")
+            raise
             
         connection = ""    
         while True:
@@ -156,7 +170,7 @@ class BLE_GATEWAY(object):
                 print("Connected.")
                 connection = True
                 for handle in self.handle:
-                    self.device.writeCharacteristic(handle, self.data, True)
+                    self.device.writeCharacteristic(handle, self.data[self.handle.index(handle)], True)
                 return 0
                     
             except bluepy.btle.BTLEException as e:

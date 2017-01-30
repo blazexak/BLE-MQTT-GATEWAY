@@ -1,71 +1,7 @@
 
-2017-01-30 11:43:16,337 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 11:43:16 24
-2017-01-30 11:43:37,372 - exampleApp - INFO - bean/infared_temperature/rate 600
-2017-01-30 11:47:55,181 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 11:47:55 25
-2017-01-30 11:48:21,209 - exampleApp - INFO - bean/infared_temperature/rate 5
-2017-01-30 11:48:29,838 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 11:48:29 25
-2017-01-30 11:48:34,795 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 11:48:34 27
-2017-01-30 11:48:34,913 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 11:48:34 25
-2017-01-30 11:48:40,470 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 11:48:40 27
-2017-01-30 11:48:40,496 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 11:48:40 25
-2017-01-30 11:48:41,987 - exampleApp - INFO - bean/infared_temperature/rate 5
-2017-01-30 11:49:21,266 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 11:49:21 26
-2017-01-30 11:49:21,385 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 11:49:21 25
-2017-01-30 11:49:22,718 - exampleApp - INFO - bean/infared_temperature/rate 5
-2017-01-30 11:55:19,455 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 11:55:19 23
-2017-01-30 11:55:20,163 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 11:55:19 24
-2017-01-30 11:55:24,038 - exampleApp - INFO - bean/infared_temperature/rate 5
-2017-01-30 11:57:39,907 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 11:57:39 25
-2017-01-30 11:57:39,985 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 11:57:39 23
-2017-01-30 11:57:42,154 - exampleApp - INFO - bean/infared_temperature/rate 5
-2017-01-30 11:57:46,874 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 11:57:46 24
-2017-01-30 11:57:52,200 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 11:57:52 29
-2017-01-30 11:57:52,202 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 11:57:52 24
-2017-01-30 11:57:53,739 - exampleApp - INFO - bean/infared_temperature/rate 5
-2017-01-30 12:07:04,653 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:07:04 27
-2017-01-30 12:07:04,788 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:07:04 24
-2017-01-30 12:07:10,148 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:07:10 25
-2017-01-30 12:07:10,412 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:07:10 24
-2017-01-30 12:07:34,912 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:07:34 26
-2017-01-30 12:07:35,218 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:07:34 24
-2017-01-30 12:07:38,246 - exampleApp - INFO - bean/infared_temperature/rate 5
-2017-01-30 12:11:28,045 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:11:27 28
-2017-01-30 12:11:28,251 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:11:28 24
-2017-01-30 12:11:28,752 - exampleApp - INFO - bean/infared_temperature/rate 5
-2017-01-30 12:12:21,460 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:12:21 27
-2017-01-30 12:12:21,626 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:12:21 13
-2017-01-30 12:12:27,043 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:12:26 26
-2017-01-30 12:12:27,056 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:12:27 25
-2017-01-30 12:12:30,323 - exampleApp - INFO - bean/infared_temperature/rate 5
-2017-01-30 12:20:25,534 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:20:25 24
-2017-01-30 12:20:25,674 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:20:25 25
-2017-01-30 12:20:30,908 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:20:30 25
-2017-01-30 12:20:31,015 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:20:31 25
-2017-01-30 12:20:35,582 - exampleApp - INFO - bean/infared_temperature/rate 5
-2017-01-30 12:21:42,381 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:21:42 25
-2017-01-30 12:21:42,446 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:21:42 27
-2017-01-30 12:21:48,483 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:21:48 25
-2017-01-30 12:21:48,595 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:21:48 27
-2017-01-30 12:21:52,695 - exampleApp - INFO - bean/infared_temperature/rate 5
-2017-01-30 12:23:56,144 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:23:55 28
-2017-01-30 12:23:56,206 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:23:56 25
-2017-01-30 12:24:02,355 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:24:01 28
-2017-01-30 12:24:02,618 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:24:02 26
-2017-01-30 12:24:06,768 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:24:06 27
-2017-01-30 12:24:06,796 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:24:06 26
-2017-01-30 12:24:12,198 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:24:12 27
-2017-01-30 12:24:12,398 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:24:12 26
-2017-01-30 12:24:17,748 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:24:17 27
-2017-01-30 12:24:18,069 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:24:17 26
-2017-01-30 12:24:23,253 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:24:23 27
-2017-01-30 12:24:23,398 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:24:23 26
-2017-01-30 12:24:28,451 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:24:28 27
-2017-01-30 12:24:28,619 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:24:28 27
-2017-01-30 12:24:34,060 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:24:34 27
-2017-01-30 12:24:34,189 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:24:34 27
-2017-01-30 12:24:39,528 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:24:39 27
-2017-01-30 12:24:39,637 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:24:39 27
-2017-01-30 12:24:44,902 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:24:44 24
-2017-01-30 12:24:44,954 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:24:44 27
-2017-01-30 12:24:45,513 - exampleApp - INFO - bean/infared_temperature/rate 600
-2017-01-30 12:24:51,580 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 12:24:51 27
+2017-01-30 16:07:47,869 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 16:07:47 24
+2017-01-30 16:07:48,395 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 16:07:47 26
+2017-01-30 16:07:53,333 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 16:07:53 23
+2017-01-30 16:07:53,500 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 16:07:53 26
+2017-01-30 16:07:55,855 - exampleApp - INFO - bean/infared_temperature/rate 3600
+2017-01-30 16:08:01,269 - exampleApp - INFO - bean/infared_temperature/rate 2017-01-30 16:08:01 26
