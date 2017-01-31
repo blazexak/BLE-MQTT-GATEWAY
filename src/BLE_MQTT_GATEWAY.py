@@ -51,17 +51,19 @@ class BLE_GATEWAY(object):
                             pass
 #                         print("Data received.")
             except bluepy.btle.BTLEException as e:
-                print e.message, e.code
                 if(e.code == 1):
                     if(connection == True):
                         print("BLE device disconnected.")
                         connection = False
                         self.connected_event.clear()
+                    elif(connection == False):
+                        print ".",
                     continue
                 if(e.code == 3):
                     print "Unexpected response received. Retry without reconnecting."                
                     continue
                 else:
+                    print e.message, e.code
                     raise       
             except:
                 print sys.exc_info()[0]
