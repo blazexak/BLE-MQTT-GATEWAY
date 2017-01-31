@@ -55,7 +55,7 @@ class BLE_delegate(bluepy.btle.DefaultDelegate):
             logger.info("Data: ", data)
             logger.info("Handle: ", cHandle)
             
-        self.client.publish(MQTT_SUBSCRIBING_TOPIC[0], time.strftime(payload))
+        self.client.publish(MQTT_SUBSCRIBING_TOPIC[0], data)
         
 class MQTT_delegate(object):
     def __init__(self):
