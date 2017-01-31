@@ -9,21 +9,12 @@ import time
 import logging
 import logging.config
 
-# index = len(sys.argv[0]) - sys.argv[0][::-1].index('/') -1  
-# log_dir = sys.argv[0][0:index]
-# index1 = len(log_dir) - log_dir[::-1].index('/') -1
-# log_dir = sys.argv[0][0:index1] + "/log/"
-
 fullpath = os.path.abspath(sys.argv[0])
-print fullpath
 pathname = os.path.dirname(fullpath)
-print pathname
 index = len(fullpath) - fullpath[::-1].index('/') -1 
 log_file = fullpath[index+1:-3] + ".log"
 log_dir = pathname[0:-4] + "/log/"
 
-print log_dir
-print log_file
 try:
     f = open(log_dir + log_file, 'r')
 except IOError:
@@ -47,7 +38,7 @@ BLE_HANDLE = [51, 55, 59, 63, 67]
 MQTT_SERVER = "192.168.1.9"
 MQTT_SUBSCRIBING_TOPIC = ["bean/eink"]
 VERBOSE = 0
-
+BLE_lock = threading.Lock()
 
 class MQTT_delegate(object):
     def __init__(self):
@@ -61,7 +52,12 @@ class MQTT_delegate(object):
         
         if(msg.topic == MQTT_SUBSCRIBING_TOPIC[0]):
             eink_msg = splitMsg(msg.payload)
-            threading.Thread(target = ble_gateway.data_updater,args=(BLE_HANDLE,eink_msg)).start()
+            with BLE_lock:
+                writer = threading.Thread(target = ble_gateway.data_updater,args=(BLE_HANDLE,eink_msg))
+                writer.start()
+                while( writer.is_alive() == True):
+                    pass
+                print "Exit thread"
 
 # Function for splitting message into substring to fit eink's screen size
 # Return: A list which contains the number of strings to print to each line of the screen    
@@ -89,7 +85,9 @@ def splitMsg(msg):
             eink_msg[i] = wordSplit[n]
             space = space - len(wordSplit[n])
             
-    #print "Size of message: ", len(eink_msg)
+    for y in range(5):
+        if(eink_msg[y] == ''):
+            eink_msg[y] = " "
             
     return eink_msg 
 

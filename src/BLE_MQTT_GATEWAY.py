@@ -173,6 +173,9 @@ class BLE_GATEWAY(object):
                 connection = True
                 for handle in self.handle:
                     self.device.writeCharacteristic(handle, self.data[self.handle.index(handle)], True)
+                self.device.disconnect()
+                time.sleep(3)
+                print "Exit data updater."    
                 return 0
                     
             except bluepy.btle.BTLEException as e:

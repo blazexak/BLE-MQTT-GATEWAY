@@ -1,11 +1,29 @@
 #!/usr/bin/python
 
 import sys
+import os
 import threading
 import BLE_MQTT_GATEWAY as gateway
 import bluepy
 import time
 import binascii
+import logging
+import logging.config
+
+fullpath = os.path.abspath(sys.argv[0])
+pathname = os.path.dirname(fullpath)
+index = len(fullpath) - fullpath[::-1].index('/') -1 
+log_file = fullpath[index+1:-3] + ".log"
+log_dir = pathname[0:-4] + "/log/"
+
+try:
+    f = open(log_dir + log_file, 'r')
+except IOError:
+    f = open(log_dir + log_file, 'w')
+f.close()
+    
+logging.config.fileConfig('test.conf', defaults={'logfilename': log_dir + log_file})
+logger = logging.getLogger("exampleApp")
 
 if(len(sys.argv) == 2 and sys.argv[1] == "test"):
     pass
@@ -36,8 +54,8 @@ class BLE_delegate(bluepy.btle.DefaultDelegate):
         
     def handleNotification(self, cHandle, data):
         if(VERBOSE == 1):
-            print("Data: ", data)
-            print("Handle: ", cHandle)
+            logger.info("Data: " + data)
+            logger.info("Handle: " + str(cHandle))
             
         self.client.publish(MQTT_PUBLISHING_TOPIC[0], time.strftime("%Y-%m-%d %H:%M:%S ", time.gmtime()) + data)
         
@@ -49,7 +67,7 @@ class MQTT_delegate(object):
         self.ble_gateway = BLE_GATEWAY
     
     def handleNotification(self, client, uerdata, msg):
-        print(msg.topic+" "+str(msg.payload)) 
+        logger.info(msg.topic+" "+str(msg.payload)) 
         
         if(msg.topic == MQTT_SUBSCRIBING_TOPIC[0]):
             state, hsb = check_HSV(msg.payload)
