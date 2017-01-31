@@ -8,8 +8,21 @@ import time
 import logging
 import logging.config
 
-logging.config.fileConfig('logging.conf')
+index = len(sys.argv[0]) - sys.argv[0][::-1].index('/') -1  
+log_dir = sys.argv[0][0:index]
+index1 = len(log_dir) - log_dir[::-1].index('/') -1
+log_dir = sys.argv[0][0:index1] + "/log/"
+log_file = sys.argv[0][index+1:-3] + ".log"
+
+try:
+    f = open(log_dir + log_file, 'r')
+except IOError:
+    f = open(log_dir + log_file, 'w')
+f.close()
+    
+logging.config.fileConfig('test.conf', defaults={'logfilename': log_dir + log_file})
 logger = logging.getLogger("exampleApp")
+logger.info("check")
 
 if(len(sys.argv) == 2 and sys.argv[1] == "test"):
     pass
@@ -21,7 +34,7 @@ MAC_ADDRESS = "D0:39:72:C9:99:A2"
 DEVICE_TYPE = "NULL"
 BLE_HANDLE = [51, 55, 59, 63, 67]
 
-MQTT_SERVER = "192.168.1.6"
+MQTT_SERVER = "192.168.1.9"
 MQTT_SUBSCRIBING_TOPIC = ["bean/eink"]
 VERBOSE = 0
 
@@ -74,8 +87,10 @@ if(__name__ == "__main__"):
     try:
         mqtt_delegate = MQTT_delegate()
         mqtt_gateway = gateway.MQTT_GATEWAY(MQTT_SERVER, MQTT_SUBSCRIBING_TOPIC, mqtt_delegate.handleNotification)
+        print "check"
         ble_gateway = gateway.BLE_GATEWAY(DEVICE_NAME, MAC_ADDRESS, DEVICE_TYPE,)
         mqtt_delegate.addBLE(ble_gateway)
+        print "here"
         threading.Thread(target=mqtt_gateway.client.loop_forever).start()
         while True:
             pass
