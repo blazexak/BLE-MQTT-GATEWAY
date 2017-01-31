@@ -18,8 +18,8 @@ fullpath = os.path.abspath(sys.argv[0])
 print fullpath
 pathname = os.path.dirname(fullpath)
 print pathname
-index = len(sys.argv[0]) - sys.argv[0][::-1].index('/') -1 
-log_file = sys.argv[0][index+1:-3] + ".log"
+index = len(fullpath) - fullpath[::-1].index('/') -1 
+log_file = fullpath[index+1:-3] + ".log"
 log_dir = pathname[0:-4] + "/log/"
 
 print log_dir
