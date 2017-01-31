@@ -15,7 +15,9 @@ import logging.config
 # log_dir = sys.argv[0][0:index1] + "/log/"
 
 fullpath = os.path.abspath(sys.argv[0])
+print fullpath
 pathname = os.path.dirname(fullpath)
+print pathname
 index = len(sys.argv[0]) - sys.argv[0][::-1].index('/') -1 
 log_file = sys.argv[0][index+1:-3] + ".log"
 log_dir = pathname[0:-4] + "/log/"
