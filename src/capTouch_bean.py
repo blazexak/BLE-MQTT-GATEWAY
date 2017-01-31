@@ -21,7 +21,7 @@ except IOError:
     f = open(log_dir + log_file, 'w')
 f.close()
     
-logging.config.fileConfig('test.conf', defaults={'logfilename': log_dir + log_file})
+logging.config.fileConfig('logging.conf', defaults={'logfilename': log_dir + log_file})
 logger = logging.getLogger("exampleApp")
 
 if(len(sys.argv) == 2 and sys.argv[1] == "test"):

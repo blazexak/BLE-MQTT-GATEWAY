@@ -21,9 +21,8 @@ except IOError:
     f = open(log_dir + log_file, 'w')
 f.close()
     
-logging.config.fileConfig('test.conf', defaults={'logfilename': log_dir + log_file})
+logging.config.fileConfig('logging.conf', defaults={'logfilename': log_dir + log_file})
 logger = logging.getLogger("exampleApp")
-logger.info("check")
 
 if(len(sys.argv) == 2 and sys.argv[1] == "test"):
     pass
@@ -95,10 +94,8 @@ if(__name__ == "__main__"):
     try:
         mqtt_delegate = MQTT_delegate()
         mqtt_gateway = gateway.MQTT_GATEWAY(MQTT_SERVER, MQTT_SUBSCRIBING_TOPIC, mqtt_delegate.handleNotification)
-        print "check"
         ble_gateway = gateway.BLE_GATEWAY(DEVICE_NAME, MAC_ADDRESS, DEVICE_TYPE,)
         mqtt_delegate.addBLE(ble_gateway)
-        print "here"
         threading.Thread(target=mqtt_gateway.client.loop_forever).start()
         while True:
             pass
