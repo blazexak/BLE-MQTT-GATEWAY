@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import sys
+import os
 import BLE_MQTT_GATEWAY as gateway
 import bluepy
 import threading
@@ -8,12 +9,19 @@ import time
 import logging
 import logging.config
 
-index = len(sys.argv[0]) - sys.argv[0][::-1].index('/') -1  
-log_dir = sys.argv[0][0:index]
-index1 = len(log_dir) - log_dir[::-1].index('/') -1
-log_dir = sys.argv[0][0:index1] + "/log/"
-log_file = sys.argv[0][index+1:-3] + ".log"
+# index = len(sys.argv[0]) - sys.argv[0][::-1].index('/') -1  
+# log_dir = sys.argv[0][0:index]
+# index1 = len(log_dir) - log_dir[::-1].index('/') -1
+# log_dir = sys.argv[0][0:index1] + "/log/"
 
+fullpath = os.path.abspath(sys.argv[0])
+pathname = os.path.dirname(fullpath)
+index = len(sys.argv[0]) - sys.argv[0][::-1].index('/') -1 
+log_file = sys.argv[0][index+1:-3] + ".log"
+log_dir = pathname[0:-4] + "/log/"
+
+print log_dir
+print log_file
 try:
     f = open(log_dir + log_file, 'r')
 except IOError:
