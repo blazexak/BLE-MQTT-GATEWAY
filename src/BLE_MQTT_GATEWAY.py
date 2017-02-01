@@ -46,6 +46,7 @@ class BLE_GATEWAY(object):
                     self.set_delegate() # Set delegates assigned in self.handle list              
                 
                 while True:
+                    time.sleep(1)
                     with self.BLE_lock:
                         self.notification = self.device.waitForNotifications(1)
                         if(self.notification == True):
