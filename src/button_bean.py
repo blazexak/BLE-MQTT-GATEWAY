@@ -72,6 +72,7 @@ class MQTT_delegate(object):
         if(msg.topic == MQTT_SUBSCRIBING_TOPIC[0]):
             state, hsb = check_HSV(msg.payload)
             if state == True:
+                logger.info("Setting data.")
                 self.ble_gateway.set_data(HANDLE[0], msg.payload)            
 
 # Function for checking HSV string format: "HHH,SSS,BBB"
