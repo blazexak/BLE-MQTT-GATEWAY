@@ -5,6 +5,7 @@ import paho.mqtt.client as mqtt
 import threading
 import time
 from bluepy.btle import BTLEException
+import timeit
 
 class BLE_GATEWAY(object):
     
@@ -168,11 +169,14 @@ class BLE_GATEWAY(object):
         connection = ""    
         while True:
             try:
+                start_time = timeit.default_timer()
                 self.device = bluepy.btle.Peripheral(self.mac)
                 print("Connected.")
                 connection = True
                 for handle in self.handle:
                     self.device.writeCharacteristic(handle, self.data[self.handle.index(handle)], True)
+                elapsed = timeit.default_timer() - start_time
+                print "time: ", elapsed
                 self.device.disconnect()
                 time.sleep(3)
                 print "Exit data updater."    
