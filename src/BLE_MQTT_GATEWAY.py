@@ -132,11 +132,8 @@ class BLE_GATEWAY(object):
 
             
     def set_data(self, handle, data):
-        print "In set_data(): waiting for BLE resource"
         with self.BLE_lock:
-            print "BLE resource acquired"
             self.connected_event.wait()
-            print "Writing"
             self.device.writeCharacteristic(handle, data, True)
             print "Data set: ", data    
         
