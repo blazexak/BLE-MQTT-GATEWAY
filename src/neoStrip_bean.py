@@ -66,7 +66,7 @@ class MQTT_delegate(object):
                 while( writer.is_alive() == True):
                     pass
                 print "Exit thread"            
-
+ 
 # Function for checking HSV string format: "HHH,SSS,BBB"
 # All H,S,B must be integer between 0-255, otherwise invalid
 def check_HSB(msg):

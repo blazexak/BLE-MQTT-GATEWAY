@@ -74,10 +74,10 @@ class BLE_GATEWAY(object):
     def reset_connection(self):
         self.device.disconnect()
         time.sleep(3)
-        self.reconnect_persistent()
+        self.reconnect_blocking()
         self.set_delegate()   
         
-    def reconnect_persistent(self):
+    def reconnect_blocking(self):
         while True:
             try:
                 self.device.connect(self.mac)
@@ -102,7 +102,7 @@ class BLE_GATEWAY(object):
                     if(e.code == 1):
                         continue
                     elif(e.message == "Helper not started (did you call connect()?)"):
-                            self.reconnect_persistent()
+                            self.reconnect_blocking()
                             continue
                     else:
                         raise                     
@@ -121,15 +121,13 @@ class BLE_GATEWAY(object):
                         if(e.code == 1):
                             continue
                         elif(e.message == "Helper not started (did you call connect()?)"):
-                            self.reconnect_persistent()
+                            self.reconnect_blocking()
                             continue 
                         else:
                             raise                    
                 
                 print "Polling rate updated to ", rate
-                self.reset_connection()
-                
-
+                self.reset_connection()         
             
     def set_data(self, handle, data):
         with self.BLE_lock:
@@ -196,6 +194,7 @@ class BLE_GATEWAY(object):
                 print sys.exc_info()[0]
                 raise
                                 
+                                
 class MQTT_GATEWAY(object):
     
     def __init__(self, MQTT_BROKER_ADDRESS, SUBSCRIBE_TOPIC, MQTT_DELEGATE):
@@ -219,6 +218,4 @@ class MQTT_GATEWAY(object):
         print("Connected to MQTT Broker with result code "+str(rc))
         for topic in self.subscribe_topic:
             self.client.subscribe(topic)
-            
-    def get_client(self):
-        return self.client        
+                   
