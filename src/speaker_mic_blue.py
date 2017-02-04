@@ -31,8 +31,8 @@ elif(len(sys.argv) == 1):
 DEVICE_NAME = "Bluetooth Speaker MPHBS01"
 MAC_ADDRESS = "00:00:01:04:33:71"
 DEVICE_TYPE = "NULL"
-PLAYBACK_DIR = "/home/zen/git-repos/BLE-MQTT-GATEWAY/audio/"
-RECORD_DIR = "/home/zen/git-repos/BLE-MQTT-GATEWAY/audio/"
+PLAYBACK_DIR = "/home/pi/git-repos/BLE-MQTT-GATEWAY/audio/"
+RECORD_DIR = "/home/pi/git-repos/BLE-MQTT-GATEWAY/audio/"
 
 MQTT_SERVER = "192.168.1.9"
 MQTT_SUBSCRIBING_TOPIC = ["multimedia/speaker", "multimedia/microphone"]
@@ -51,7 +51,7 @@ class MQTT_delegate(object):
         if(msg.topic == "multimedia/speaker"):
             with BLE_lock:
                 self.multimedia.playback()
-        elif(msg.topic == "multimedia/mic"):
+        elif(msg.topic == "multimedia/microphone"):
             with BLE_lock:
                 self.multimedia.record()
 

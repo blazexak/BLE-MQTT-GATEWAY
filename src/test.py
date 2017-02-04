@@ -1,6 +1,9 @@
 import pexpect
 import sys
 import traceback
+import sys
+import subprocess
+import time
 
 mac = "00:00:01:04:33:71"
 mac_id = mac.replace(':', '_')
@@ -11,13 +14,13 @@ def multimedia_connection_status():
         command = 'bluetoothctl'
         child = pexpect.spawn(command)
         child.logfile = open("/tmp/mylog", "w")
-        child.sendline('info ' + mac)
+        child.sendline('info ' + mac, timeout=1)
         child.expect("Connected: yes")
         return True
     except:
-        print("Exception 1 was thrown.")
+        print("Exception was thrown. Multimedia connection status.")
         print("Debug information: ")
-        traceback.print_exception()
+        #traceback.print_exception()
         print(str(child))
         return False
         
@@ -28,14 +31,25 @@ def multimedia_connect():
         child.logfile = open("/tmp/mylog", "w")
         child.sendline('power on')
         child.expect("Changing power on succeeded")
+        child.sendline('agent on')
+        child.sendline('default-agent')
+        child.sendline('scan on')
+        child.sendline("pair 00:00:03:04:28:04")
         child.sendline("trust 00:00:03:04:28:04")
         child.expect("trust succeeded")
+        pidID = subprocess.check_output(["pidof", "pulseaudio"]).split()
+        x = 0
+        for x in range(len(pidID)):
+           subprocess.call(["kill", pidID[x]])
+        time.sleep(1)
         child.sendline("connect 00:00:03:04:28:04")
         child.expect("Connection successful")
+        child.sendline('scan off')
         child.close()
     except:
-        print("Exception 1 was thrown.")
+        print("Exception was thrown. Multimedia connecting.")
         print("Debug information: ")
+        print sys.exc_info()
         traceback.print_exception()
         print(str(child))
     
@@ -54,7 +68,7 @@ def check_default_sink_source():
         else:
             return False
     except:
-        print("Exception 2 was thrown.")
+        print("Exception was thrown. Checking default sink source.")
         print("Debug information: ")
 #         traceback.print_exc()
         print(str(child))
@@ -69,7 +83,7 @@ def set_default_sink_source():
         child.sendline("set-default-source bluez_source." + mac_id)   
         return True 
     except:
-        print("Exception 2 was thrown.")
+        print("Exception was thrown. Setting default sink source")
         print("Debug information: ")
 #         traceback.print_exc()
         print(str(child))
