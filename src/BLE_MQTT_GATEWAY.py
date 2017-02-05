@@ -4,6 +4,8 @@ import sys
 import paho.mqtt.client as mqtt
 import threading
 import time
+import pexpect
+import traceback
 from bluepy.btle import BTLEException
 import timeit
 
@@ -218,4 +220,48 @@ class MQTT_GATEWAY(object):
         print("Connected to MQTT Broker with result code "+str(rc))
         for topic in self.subscribe_topic:
             self.client.subscribe(topic)
-                   
+
+class Bluetooth_Multimedia_Gateway(object):
+    
+    def __init__(self, DEVICE_MAC_ADDRESS):
+        self.bluetooth_lock = threading.Lock()
+        self.mac = DEVICE_MAC_ADDRESS
+        
+    def multimedia_connect(self, ):
+        try:
+            command = 'bluetoothctl'
+            child = pexpect.spawn(command)
+            child.logfile = open("/tmp/mylog", "w")
+            child.sendline('power on')
+            child.expect("Changing power on succeeded")
+            child.sendline("trust 00:00:03:04:28:04")
+            child.expect("trust succeeded")
+            child.sendline("connect 00:00:03:04:28:04")
+            child.expect("Connection successful")
+            child.close()
+        except:
+            print("Exception 1 was thrown.")
+            print("Debug information: ")
+            traceback.print_exception()
+            print(str(child))
+    
+    def check_default_sink_source(self):
+        try:
+            command = "pacmd"
+            child = pexpect.spawn(command)
+            child.logfile = open("/tmp/mylog", "w")
+            child.sendline("stat")
+            code1 = child.expect("Default sink name: bluez_sink.00_00_03_04_28_04")#\r\n", pexpect.TIMEOUT)
+            code2 = child.expect("Default source name: bluez_source.00_00_03_04_28_04")#, pexpect.TIMEOUT)
+            child.close
+            
+            if(code1 == 0 and code2 == 0):
+                return True
+            else:
+                return False
+        except:
+            print("Exception 2 was thrown.")
+            print("Debug information: ")
+            traceback.print_exc()
+            print(str(child))    
+             
