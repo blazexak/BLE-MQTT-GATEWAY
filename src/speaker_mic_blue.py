@@ -6,6 +6,7 @@ import threading
 import time
 import logging
 import logging.config
+import traceback
 from DEVICE import Bluetooth_Speaker_Mic
 
 fullpath = os.path.abspath(sys.argv[0])
@@ -52,23 +53,26 @@ class MQTT_delegate(object):
         if(msg.topic == "multimedia/speaker"):
             with BLE_lock:
                 self.multimedia.playback(DELETE = True)
-                f = self.multimedia.file_available()
+                f = self.multimedia.file_available(PLAYBACK_DIR)
                 if(f == False):
                     client.publish("multimedia/message_box", '0')
         elif(msg.topic == "multimedia/microphone"):
             with BLE_lock:
                 self.multimedia.record(COUNTDOWN=30)
                 
-def audio_check_thread(multimedia, delay):
+def audio_check_thread(client, multimedia, delay):
     while True:
         try:
-            f = multimedia.file_available()
-            if(f == True):
-                # do something
-                pass
+            f = multimedia.file_available(PLAYBACK_DIR)
+            if(f == False):
+				client.publish("multimedia/message_box", '0')
+            elif(f == True):
+                client.publish("multimedia/message_box", '1')
             time.sleep(delay)
         except:
             logger.info("Exception caught in audio check thread.")
+            logger.info(sys.exc_info()[0])
+            logger.info(traceback.format_exc())	
                             
 
 if(__name__ == "__main__"):
@@ -78,7 +82,7 @@ if(__name__ == "__main__"):
         multimedia = Bluetooth_Speaker_Mic(DEVICE_NAME, MAC_ADDRESS, PLAYBACK_DIR, RECORD_DIR)
         mqtt_delegate.addMultimedia(multimedia)
         threading.Thread(target=mqtt_gateway.client.loop_forever).start()
-        threading.Thread(target=audio_check_thread, name="Audio Check Thread",args=(multimedia,10)).start()
+        threading.Thread(target=audio_check_thread, name="Audio Check Thread",args=(mqtt_gateway.client, multimedia,10)).start()
         print("Thread started.")
         
         while True:

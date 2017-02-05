@@ -13,6 +13,7 @@ class Bluetooth_Speaker_Mic(object):
 		self.mac = MAC_ADDRESS
 		self.play_dir = PLAYBACK_DIR
 		self.record_dir = RECORD_DIR
+		self.recording_event = threading.Event()		
 		
 		d = os.path.dirname(self.play_dir)
 		if not os.path.exists(d):
@@ -34,17 +35,22 @@ class Bluetooth_Speaker_Mic(object):
 				print "No audio available."
 		
 	def record(self, COUNTDOWN, IP_ADDRESS=None):
-		self.file_lock = threading.Lock()
+		self.recording_lock = threading.Lock()
 		arecord_status = self.subprocess_check_initiate("arecord", "NULL")
+		if(arecord_status == -1):
+			self.recording_event.set()
+			print "Recording stopped."
 		if(arecord_status == 0): 
 			f = time.strftime("%Y%m%d%H%M%S") + ".wav"
-			subprocess.call(["arecord", "-f", "dat", self.record_dir+f])
-			with self.file_lock:
-				threading.Thread(target = self.countdown_kill, args = ("arecord", COUNTDOWN)).start()
+			subprocess.Popen(["arecord", "-f", "dat", self.record_dir+f])
+			with self.recording_lock:
+				threading.Thread(target = self.countdown_kill, args = ("arecord", COUNTDOWN, self.recording_event)).start()
+				self.recording_event.clear()
+			print("Lock released after countdown.")
 			if(IP_ADDRESS != None):
 				try:
 					socket.inet_aton(IP_ADDRESS)
-					with self.file_lock:
+					with self.recording_lock:
 						self.file_transfer(f, IP_ADDRESS) 
 				except socket.error:
 					raise TypeError	  
@@ -74,7 +80,6 @@ class Bluetooth_Speaker_Mic(object):
 				return False
 		except:
 			print(sys.exc_info()[0])
-			continue				
 				   
 	def file_transfer(self, FILE, IP_ADDRESS):
 		subprocess.call(["ssh", IP_ADDRESS, 'mkdir -p '+ self.record])
@@ -94,17 +99,22 @@ class Bluetooth_Speaker_Mic(object):
 			print "Pre-existing process killed by user."
 			return 1
 		except subprocess.CalledProcessError:
-			print "No process " + PROCESS_NAME + "exists."
+			print "No process " + PROCESS_NAME + " exists."
 			return 0
 		except:
 			print "Unknown error caught! Exit!"
 			raise		
 
 	# Thread to kill a process after COUNTDOWN seconds
-	def countdown_kill(self,PROCESS_NAME, COUNTDOWN):
+	def countdown_kill(self,PROCESS_NAME, COUNTDOWN, EVENT):
 		try:
 			print "Countdown thread started."
-			time.sleep(COUNTDOWN)
+			for x in range(COUNTDOWN):
+				time.sleep(1)
+				if(EVENT.is_set() == True):
+					print "External event signal received. ", PROCESS_NAME, " killed"
+					break
+			
 #			 client.publish(MQTT_TOPIC_HSB, "000,255,000")
 #			 time.sleep(1)
 			pidID = subprocess.check_output(["pidof", PROCESS_NAME]).split()
