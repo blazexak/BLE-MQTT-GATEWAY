@@ -2,6 +2,7 @@ import os
 import subprocess
 import time
 import socket
+import sys
 
 class Bluetooth_Speaker_Mic(object):
     
@@ -60,6 +61,18 @@ class Bluetooth_Speaker_Mic(object):
         subprocess.call(["scp", self.record_dir+FILE, "pi@"+IP_ADDRESS+":"+self.record_dir])
         subprocess.call(["sudo", "rm", self.record_dir+FILE])                    
             
-        
+    def subprocess_check_initiate(self,process_name, device_name):
+        try:
+            pidID = subprocess.check_output(["pidof", process_name]).split()
+            x = 0
+            for x in range(len(pidID)):
+                subprocess.call(["kill", pidID[x]]) 
+            print "Process killed by user."
+            print "Playback stopped"
+        except subprocess.CalledProcessError:
+            print "No process " + process_name + "exists."
+        except:
+            print "Unknown error caught! Exit!"
+            raise        
 
         
