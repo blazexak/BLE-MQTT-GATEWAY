@@ -53,7 +53,7 @@ class MQTT_delegate(object):
         if(msg.topic == "multimedia/speaker"):
             if(multimedia_event.is_set() == False):
                 multimedia_event.set()
-                self.multimedia.playback(DELETE = True, client, MQTT_PUBLISHING_TOPIC[1])
+                self.multimedia.playback(DELETE = True, CLIENT=client, TOPIC=MQTT_PUBLISHING_TOPIC[1])
                 f = self.multimedia.file_available(PLAYBACK_DIR)
                 if(f == False):
                     client.publish("multimedia/message_box", '0')
@@ -61,7 +61,7 @@ class MQTT_delegate(object):
         elif(msg.topic == "multimedia/microphone"):
             if(multimedia_event.is_set() == False):
                 multimedia_event.set()
-                self.multimedia.record(COUNTDOWN=30, client, MQTT_PUBLISHING_TOPIC[2])
+                self.multimedia.record(COUNTDOWN=30, CLIENT=client,TOPIC= MQTT_PUBLISHING_TOPIC[2])
                 multimedia_event.clear()
                 
 def audio_check_thread(client, multimedia, delay):

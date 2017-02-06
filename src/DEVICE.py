@@ -4,7 +4,6 @@ import time
 import socket
 import sys
 import threading
-from example.bean import MAC_ADDRESS
 
 
 class Bluetooth_Speaker_Mic(object):
@@ -137,8 +136,8 @@ class Bluetooth_Speaker_Mic(object):
 			print "Unknown error caught! Exit!"
 			raise
 		
-class Button_Bean(object, MAC_ADDRESS):		
-	def __init__(self):
+class Button_Bean(object):		
+	def __init__(self, MAC_ADDRESS):
 		self.mac = MAC_ADDRESS
 		
 	def check_HSV(self, msg):
