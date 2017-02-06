@@ -48,6 +48,7 @@ class Bluetooth_Speaker_Mic(object):
 			f = time.strftime("%Y%m%d%H%M%S") + ".wav"
 			if(CLIENT!=None and TOPIC!=None):
 				CLIENT.publish(TOPIC, '1')
+			subprocess.call(["aplay", os.path.dirname("beep-08b.wav")])
 			subprocess.Popen(["arecord", "-f", "dat", self.record_dir+f])
 			
 			with self.recording_lock:
@@ -130,6 +131,7 @@ class Bluetooth_Speaker_Mic(object):
 			for x in range(len(pidID)):
 				subprocess.call(["kill", pidID[x]])	
 			print PROCESS_NAME + " killed"
+			subprocess.call(["aplay", os.path.dirname("beep-07.wav")])
 		except subprocess.CalledProcessError:
 			print "Error caught: ", sys.exc_info()[0]
 		except:
