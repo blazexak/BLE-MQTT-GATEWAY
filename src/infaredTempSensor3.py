@@ -37,6 +37,7 @@ HANDLE = [51, 55, 59, 63, 67]
 
 MQTT_SERVER = "192.168.1.9"
 MQTT_SUBSCRIBING_TOPIC = ["bean/infared_temperature/rate"]
+MQTT_PUBLISHING_TOPIC = ["tempSensor_bean/object_temp", "tempSensor_bean/ambient_temp"]
 VERBOSE = 0
 
 class BLE_delegate(bluepy.btle.DefaultDelegate):
@@ -55,8 +56,9 @@ class BLE_delegate(bluepy.btle.DefaultDelegate):
             logger.info("Data: ", data)
             logger.info("Handle: ", cHandle)
             
+        index = BLE_DELEGATE_HANDLE.index(cHandle)
         payload = self.binasciiToString(data)
-        self.client.publish(MQTT_SUBSCRIBING_TOPIC[0], time.strftime("%Y-%m-%d %H:%M:%S ", time.gmtime()) + payload)
+        self.client.publish(MQTT_SUBSCRIBING_TOPIC[0], MQTT_PUBLISHING_TOPIC[index] + payload)
         
 class MQTT_delegate(object):
     def __init__(self):
