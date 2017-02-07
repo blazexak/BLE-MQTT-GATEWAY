@@ -40,7 +40,7 @@ class Bluetooth_Speaker_Mic(object):
             f = time.strftime("%Y%m%d%H%M%S") + ".wav"
             subprocess.call(["arecord", "-f", "dat", self.record_dir+f])
             with self.file_lock:
-                threading.Thread(target = self.countdown_kill(), args = ("arecord", COUNTDOWN)).start()
+                threading.Thread(target = self.countdown_kill, args = ("arecord", COUNTDOWN)).start()
             if(IP_ADDRESS != None):
                 try:
                     socket.inet_aton(IP_ADDRESS)

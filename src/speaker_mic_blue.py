@@ -36,6 +36,7 @@ RECORD_DIR = "/home/pi/git-repos/BLE-MQTT-GATEWAY/audio/"
 
 MQTT_SERVER = "192.168.1.9"
 MQTT_SUBSCRIBING_TOPIC = ["multimedia/speaker", "multimedia/microphone"]
+MQTT_PUBLISHING_TOPIC = ["multimedia/message_box"]
 VERBOSE = 0
 BLE_lock = threading.Lock()
 
@@ -51,9 +52,24 @@ class MQTT_delegate(object):
         if(msg.topic == "multimedia/speaker"):
             with BLE_lock:
                 self.multimedia.playback(DELETE = True)
+                f = self.multimedia.file_available()
+                if(f == False):
+                    client.publish("multimedia/message_box", '0')
         elif(msg.topic == "multimedia/microphone"):
             with BLE_lock:
                 self.multimedia.record(COUNTDOWN=30)
+                
+def audio_check_thread(multimedia, delay):
+    while True:
+        try:
+            f = multimedia.file_available()
+            if(f == True):
+                # do something
+                pass
+            time.sleep(delay)
+        except:
+            logger.info("Exception caught in audio check thread.")
+                            
 
 if(__name__ == "__main__"):
     try:
@@ -62,6 +78,7 @@ if(__name__ == "__main__"):
         multimedia = Bluetooth_Speaker_Mic(DEVICE_NAME, MAC_ADDRESS, PLAYBACK_DIR, RECORD_DIR)
         mqtt_delegate.addMultimedia(multimedia)
         threading.Thread(target=mqtt_gateway.client.loop_forever).start()
+        threading.Thread(target=audio_check_thread, name="Audio Check Thread",args=(multimedia,10)).start()
         print("Thread started.")
         
         while True:
