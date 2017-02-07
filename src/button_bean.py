@@ -31,6 +31,7 @@ elif(len(sys.argv) == 1):
     time.sleep(120)
 
 DEVICE_NAME = "Bean Button with LED"
+DEVICE_CODE = "button_bean/"
 MAC_ADDRESS = "D0:39:72:C9:9A:0B"
 DEVICE_TYPE = "NULL"
 BLE_DELEGATE_HANDLE = [68]
@@ -57,7 +58,7 @@ class BLE_delegate(bluepy.btle.DefaultDelegate):
             logger.info("Data: " + data)
             logger.info("Handle: " + str(cHandle))
             
-        self.client.publish(MQTT_PUBLISHING_TOPIC[0], time.strftime("%Y-%m-%d %H:%M:%S ", time.gmtime()) + data)
+        self.client.publish(MQTT_PUBLISHING_TOPIC[0], DEVICE_CODE + data)
         
 class MQTT_delegate(object):
     def __init__(self):
