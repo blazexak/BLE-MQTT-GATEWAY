@@ -50,10 +50,10 @@ class MQTT_delegate(object):
         logger.info(msg.topic+" "+str(msg.payload))
         if(msg.topic == "multimedia/speaker"):
             with BLE_lock:
-                self.multimedia.playback()
+                self.multimedia.playback(DELETE = True)
         elif(msg.topic == "multimedia/microphone"):
             with BLE_lock:
-                self.multimedia.record()
+                self.multimedia.record(COUNTDOWN=30)
 
 if(__name__ == "__main__"):
     try:
