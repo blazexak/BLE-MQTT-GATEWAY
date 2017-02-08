@@ -31,6 +31,9 @@ class Bluetooth_Speaker_Mic(object):
 			if (f != -1):
 				if(CLIENT!=None and TOPIC!=None):
 					CLIENT.publish(TOPIC, '1')
+				chime = "aplay /home/pi/Downloads/chime.wav"
+				beep = "aplay /home/pi/git-repos/BLE-MQTT-GATEWAY/src/beep-07.wav"
+				subprocess.call(chime.split())				
 				subprocess.call(["aplay", self.play_dir+f[0]])
 				if(CLIENT!=None and TOPIC!=None):
 					CLIENT.publish(TOPIC, '0')
@@ -42,22 +45,26 @@ class Bluetooth_Speaker_Mic(object):
 	def record(self, COUNTDOWN, IP_ADDRESS=None, CLIENT=None, TOPIC=None):
 		self.recording_lock = threading.Lock()
 		arecord_status = self.subprocess_check_initiate("arecord", "NULL")
+		print "Status: ", arecord_status
 		if(arecord_status == -1):
+			print "set"
 			self.recording_event.set()
-			print "Recording stopped."
+			#print "Recording stopped."
 		if(arecord_status == 0): 
 			f = time.strftime("%Y%m%d%H%M%S") + ".wav"
 			if(CLIENT!=None and TOPIC!=None):
-				CLIENT.publish(TOPIC, '1')
-			subprocess.call(["aplay", os.path.dirname("beep-08b.wav")])
+				#CLIENT.publish(TOPIC, '1')
+				CLIENT.publish("bean/button/hsb", "000,255,100")
+			chime = "aplay /home/pi/Downloads/chime.wav"
+			beep = "aplay /home/pi/git-repos/BLE-MQTT-GATEWAY/src/beep-07.wav"
+			subprocess.call(chime.split())
 			subprocess.Popen(["arecord", "-f", "dat", self.record_dir+f])
 			
 			with self.recording_lock:
-				threading.Thread(target = self.countdown_kill, args = ("arecord", COUNTDOWN, self.recording_event)).start()
-				if(CLIENT!=None and TOPIC!=None):
-					CLIENT.publish(TOPIC, '0')				 
+				threading.Thread(target = self.countdown_kill, args = ("arecord", COUNTDOWN, CLIENT,)).start()
+				print "out"
 				self.recording_event.clear()
-			print("Lock released after countdown.")
+			#print("Lock released after countdown.")
 			if(IP_ADDRESS != None):
 				try:
 					socket.inet_aton(IP_ADDRESS)
@@ -106,33 +113,33 @@ class Bluetooth_Speaker_Mic(object):
 			x = 0
 			for x in range(len(pidID)):
 				subprocess.call(["kill", pidID[x]]) 
-			print "Pre-existing process killed by user."
-			return 1
+			#print "Pre-existing process killed by user."
+			return -1
 		except subprocess.CalledProcessError:
-			print "No process " + PROCESS_NAME + " exists."
+			#print "No process " + PROCESS_NAME + " exists."
 			return 0
 		except:
 			print "Unknown error caught! Exit!"
 			raise		
 
 	# Thread to kill a process after COUNTDOWN seconds
-	def countdown_kill(self,PROCESS_NAME, COUNTDOWN, EVENT):
+	def countdown_kill(self,PROCESS_NAME, COUNTDOWN, CLIENT):
 		try:
-			print "Countdown thread started."
+			#print "Countdown thread started."
 			for x in range(COUNTDOWN):
 				time.sleep(1)
-				if(EVENT.is_set() == True):
+				print x, self.recording_event.is_set()
+				if(self.recording_event.is_set() == True):
 					print "External event signal received. ", PROCESS_NAME, " killed"
 					break
-			
-#			 client.publish(MQTT_TOPIC_HSB, "000,255,000")
+			print "check"
+			CLIENT.publish("bean/button/hsb", "000,255,000")
 #			 time.sleep(1)
 			pidID = subprocess.check_output(["pidof", PROCESS_NAME]).split()
 			x = 0
 			for x in range(len(pidID)):
 				subprocess.call(["kill", pidID[x]])	
-			print PROCESS_NAME + " killed"
-			subprocess.call(["aplay", os.path.dirname("beep-07.wav")])
+			#print PROCESS_NAME + " killed"
 		except subprocess.CalledProcessError:
 			print "Error caught: ", sys.exc_info()[0]
 		except:
