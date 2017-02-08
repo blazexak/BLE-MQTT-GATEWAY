@@ -38,6 +38,7 @@ RECORD_DIR = "/home/pi/git-repos/BLE-MQTT-GATEWAY/audio/"
 MQTT_SERVER = "192.168.1.9"
 MQTT_SUBSCRIBING_TOPIC = ["multimedia/speaker", "multimedia/microphone"]
 MQTT_PUBLISHING_TOPIC = ["multimedia/message_box", "multimedia/recording_event", "multimedia/playback_event"]
+RECORDING_TIME = 30
 VERBOSE = 0
 multimedia_event = threading.Event()
 
@@ -61,7 +62,7 @@ class MQTT_delegate(object):
         elif(msg.topic == "multimedia/microphone"):
             if(multimedia_event.is_set() == False):
                 multimedia_event.set()
-                self.multimedia.record(COUNTDOWN=30, client, MQTT_PUBLISHING_TOPIC[2])
+                self.multimedia.record(COUNTDOWN=RECORDING_TIME, client, MQTT_PUBLISHING_TOPIC[2])
                 multimedia_event.clear()
                 
 def audio_check_thread(client, multimedia, delay):
