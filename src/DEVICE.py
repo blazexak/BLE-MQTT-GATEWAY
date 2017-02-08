@@ -29,11 +29,11 @@ class Bluetooth_Speaker_Mic(object):
 		if(aplay_status == 0):
 			f = self.files_in_directory(self.play_dir)
 			if (f != -1):
-                if(CLIENT!=None and TOPIC!=None):
-                    CLIENT.publish(TOPIC, '1')
-                subprocess.call(["aplay", self.play_dir+f[0]])
-                if(CLIENT!=None and TOPIC!=None):
-                    CLIENT.publish(TOPIC, '0')
+				if(CLIENT!=None and TOPIC!=None):
+					CLIENT.publish(TOPIC, '1')
+				subprocess.call(["aplay", self.play_dir+f[0]])
+				if(CLIENT!=None and TOPIC!=None):
+					CLIENT.publish(TOPIC, '0')
 				if(DELETE == True):
 					subprocess.call(["sudo", "rm", self.play_dir+f[0]])
 			else:
@@ -47,14 +47,14 @@ class Bluetooth_Speaker_Mic(object):
 			print "Recording stopped."
 		if(arecord_status == 0): 
 			f = time.strftime("%Y%m%d%H%M%S") + ".wav"
-            if(CLIENT!=None and TOPIC!=None):
-                CLIENT.publish(TOPIC, '1')
+			if(CLIENT!=None and TOPIC!=None):
+				CLIENT.publish(TOPIC, '1')
 			subprocess.Popen(["arecord", "-f", "dat", self.record_dir+f])
-            
+			
 			with self.recording_lock:
 				threading.Thread(target = self.countdown_kill, args = ("arecord", COUNTDOWN, self.recording_event)).start()
-                if(CLIENT!=None and TOPIC!=None):
-                    CLIENT.publish(TOPIC, '0')                 
+				if(CLIENT!=None and TOPIC!=None):
+					CLIENT.publish(TOPIC, '0')				 
 				self.recording_event.clear()
 			print("Lock released after countdown.")
 			if(IP_ADDRESS != None):

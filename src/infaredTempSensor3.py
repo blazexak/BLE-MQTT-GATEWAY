@@ -56,7 +56,7 @@ class BLE_delegate(bluepy.btle.DefaultDelegate):
             logger.info("Data: ", data)
             logger.info("Handle: ", cHandle)
             
-        index = BLE_DELEGATE_HANDLE.index(cHandle)
+        index = HANDLE.index(cHandle)
         payload = self.binasciiToString(data)
         self.client.publish(MQTT_SUBSCRIBING_TOPIC[0], MQTT_PUBLISHING_TOPIC[index] + payload)
         
