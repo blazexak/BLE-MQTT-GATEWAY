@@ -14,7 +14,13 @@ class Bluetooth_Speaker_Mic(object):
 		self.mac = MAC_ADDRESS
 		self.play_dir = PLAYBACK_DIR
 		self.record_dir = RECORD_DIR
-		self.recording_event = threading.Event()		
+		self.recording_event = threading.Event()	
+		self.recording_lock = threading.Lock()
+		
+		
+		self.chime = "aplay /home/pi/Downloads/chime.wav"
+		self.half_volume = "pacmd set-sink-volume 1 20000"
+		self.full_volume = "pacmd set-sink-volume 1 60000"	
 		
 		d = os.path.dirname(self.play_dir)
 		if not os.path.exists(d):
@@ -25,15 +31,16 @@ class Bluetooth_Speaker_Mic(object):
 			os.makedirs(d)			
 		
 	def playback(self, DELETE=None, CLIENT=None, TOPIC=None):
-		aplay_status = self.subprocess_check_initiate("aplay", "NULL")
+		aplay_status = self.subprocess_check_initiate("aplay", "NULL", CLIENT, TOPIC)
 		if(aplay_status == 0):
 			f = self.files_in_directory(self.play_dir)
 			if (f != -1):
-				if(CLIENT!=None and TOPIC!=None):
-					CLIENT.publish(TOPIC, '1')
-				chime = "aplay /home/pi/Downloads/chime.wav"
-				beep = "aplay /home/pi/git-repos/BLE-MQTT-GATEWAY/src/beep-07.wav"
-				subprocess.call(chime.split())				
+				#if(CLIENT!=None and TOPIC!=None):
+				#	code = CLIENT.publish(TOPIC, '1')
+				#	print code
+				subprocess.call(self.half_volume.split())
+				subprocess.call(self.chime.split())				
+				subprocess.call(self.full_volume.split())
 				subprocess.call(["aplay", self.play_dir+f[0]])
 				if(CLIENT!=None and TOPIC!=None):
 					CLIENT.publish(TOPIC, '0')
@@ -43,25 +50,20 @@ class Bluetooth_Speaker_Mic(object):
 				print "No audio available."
 		
 	def record(self, COUNTDOWN, IP_ADDRESS=None, CLIENT=None, TOPIC=None):
-		self.recording_lock = threading.Lock()
-		arecord_status = self.subprocess_check_initiate("arecord", "NULL")
-		print "Status: ", arecord_status
-		if(arecord_status == -1):
-			print "set"
-			self.recording_event.set()
-			#print "Recording stopped."
+		
+		arecord_status = self.subprocess_check_initiate("arecord", "NULL", CLIENT, TOPIC)
 		if(arecord_status == 0): 
 			f = time.strftime("%Y%m%d%H%M%S") + ".wav"
-			if(CLIENT!=None and TOPIC!=None):
-				#CLIENT.publish(TOPIC, '1')
-				CLIENT.publish("bean/button/hsb", "000,255,100")
-			chime = "aplay /home/pi/Downloads/chime.wav"
-			beep = "aplay /home/pi/git-repos/BLE-MQTT-GATEWAY/src/beep-07.wav"
-			subprocess.call(chime.split())
+			#if(CLIENT!=None and TOPIC!=None):
+			#	CLIENT.publish(TOPIC, '1')
+				#CLIENT.publish("bean/button/hsb", "000,255,100")
+			subprocess.call(self.half_volume.split())	
+			subprocess.call(self.chime.split())
+			subprocess.call(self.full_volume.split())
 			subprocess.Popen(["arecord", "-f", "dat", self.record_dir+f])
 			
 			with self.recording_lock:
-				threading.Thread(target = self.countdown_kill, args = ("arecord", COUNTDOWN, CLIENT,)).start()
+				threading.Thread(target = self.countdown_kill, args = ("arecord", COUNTDOWN, CLIENT,TOPIC,)).start()
 				print "out"
 				self.recording_event.clear()
 			#print("Lock released after countdown.")
@@ -71,7 +73,9 @@ class Bluetooth_Speaker_Mic(object):
 					with self.recording_lock:
 						self.file_transfer(f, IP_ADDRESS) 
 				except socket.error:
-					raise TypeError	  
+					raise TypeError
+		if(arecord_status == -1):
+			self.recording_event.set()						  
 						
 	def set_directory(self, DIR):
 		d = os.path.dirname(DIR)
@@ -107,9 +111,10 @@ class Bluetooth_Speaker_Mic(object):
 	# Check for existing process specified by "process_name"
 	# Return 0: If no process was found
 	# Return -1: Processes were found and terminate all processes		
-	def subprocess_check_initiate(self,PROCESS_NAME, DEVICE_NAME):
+	def subprocess_check_initiate(self,PROCESS_NAME, DEVICE_NAME, CLIENT, TOPIC):
 		try:
 			pidID = subprocess.check_output(["pidof", PROCESS_NAME]).split()
+			#CLIENT.publish(TOPIC, '0')
 			x = 0
 			for x in range(len(pidID)):
 				subprocess.call(["kill", pidID[x]]) 
@@ -123,7 +128,7 @@ class Bluetooth_Speaker_Mic(object):
 			raise		
 
 	# Thread to kill a process after COUNTDOWN seconds
-	def countdown_kill(self,PROCESS_NAME, COUNTDOWN, CLIENT):
+	def countdown_kill(self,PROCESS_NAME, COUNTDOWN, CLIENT, TOPIC):
 		try:
 			#print "Countdown thread started."
 			for x in range(COUNTDOWN):
@@ -132,9 +137,8 @@ class Bluetooth_Speaker_Mic(object):
 				if(self.recording_event.is_set() == True):
 					print "External event signal received. ", PROCESS_NAME, " killed"
 					break
-			print "check"
-			CLIENT.publish("bean/button/hsb", "000,255,000")
-#			 time.sleep(1)
+			#if(self.recording_event.is_set() != True):
+			#	CLIENT.publish(TOPIC, "1")
 			pidID = subprocess.check_output(["pidof", PROCESS_NAME]).split()
 			x = 0
 			for x in range(len(pidID)):

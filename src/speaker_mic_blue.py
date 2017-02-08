@@ -85,7 +85,7 @@ if(__name__ == "__main__"):
     try:
         mqtt_delegate = MQTT_delegate()
         mqtt_gateway = gateway.MQTT_GATEWAY(MQTT_SERVER, MQTT_SUBSCRIBING_TOPIC, mqtt_delegate.handleNotification)
-        multimedia = Bluetooth_Speaker_Mic(DEVICE_NAME, MAC_ADDRESS, PLAYBACK_DIR, RECORD_DIR)
+        multimedia = Bluetooth_Speaker_Mic(DEVICE_NAME, MAC_ADDRESS, PLAYBACK_DIR, RECORD_DIR	)
         mqtt_delegate.addMultimedia(multimedia)
         threading.Thread(target=mqtt_gateway.client.loop_forever).start()
         threading.Thread(target=audio_check_thread, name="Audio Check Thread",args=(mqtt_gateway.client, multimedia,10)).start()
