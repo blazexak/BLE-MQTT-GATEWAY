@@ -62,11 +62,7 @@ class MQTT_delegate(object):
         elif(msg.topic == "multimedia/microphone"):
             if(multimedia_event.is_set() == False):
                 multimedia_event.set()
-<<<<<<< HEAD
-                self.multimedia.record(COUNTDOWN=30, CLIENT=client,TOPIC= MQTT_PUBLISHING_TOPIC[2])
-=======
-                self.multimedia.record(COUNTDOWN=RECORDING_TIME, client, MQTT_PUBLISHING_TOPIC[2])
->>>>>>> 212581a1c7686a792d458fdb232c820f737c0466
+                self.multimedia.record(COUNTDOWN=RECORDING_TIME, CLIENT=client,TOPIC=MQTT_PUBLISHING_TOPIC[2])
                 multimedia_event.clear()
                 
 def audio_check_thread(client, multimedia, delay):
