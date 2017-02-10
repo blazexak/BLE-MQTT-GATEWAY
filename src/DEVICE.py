@@ -4,6 +4,7 @@ import time
 import socket
 import sys
 import threading
+import pexpect
 
 
 class Bluetooth_Speaker_Mic(object):
@@ -206,3 +207,57 @@ class Button_Bean(object):
 						self.file_transfer(f, IP_ADDRESS) 
 				except socket.error:
 					raise TypeError		   
+
+class SensorTag(object):
+	
+	def __init__(self, bluetooth_adr):
+		self.con = pexpect.spawn('gatttool -b ' + bluetooth_adr + ' --interactive')
+		self.con.expect('\[LE\]>', timeout=600)
+		print "Preparing to connect. You might need to press the side button..."
+		self.con.sendline('connect')
+		self.con.expect('Connection successful.*\[LE\]>')
+		self.cb = {}
+		return
+	
+	def char_write_cmd(self, handle, value):
+		# The 0%x for value is VERY naughty!  Fix this!
+		cmd = 'char-write-cmd 0x%02x 0%x' % (handle, value)
+		print cmd
+		self.con.sendline(cmd)
+		return
+
+	def char_read_hnd(self, handle):
+		self.con.sendline('char-read-hnd 0x%02x' % handle)
+		self.con.expect('descriptor: .*? \r')
+		after = self.con.after
+		rval = after.split()[1:]
+		return [long(float.fromhex(n)) for n in rval]
+	
+	def notification_loop(self):
+		while True:
+			try:
+				pnum = self.con.expect(['Notification handle = .*? \r', "GLib-WARNING"], timeout=4)
+			except:
+				print ".",
+				continue
+			
+			if(pnum == 0):
+				after = self.con.after
+				hxstr = after.split()[3:]
+				handle = long(float.fromhex(hxstr[0]))
+				
+				if True:
+					self.cb[handle]([long(float.fromhex(n)) for n in hxstr[2:]])
+				pass
+			
+			elif(pnum == 1):
+				print "Sensor tag resetted."
+				raise
+			else:
+				print "TIMEOUT!!"
+		pass
+	
+	def register_cb( self, handle, fn ):
+		self.cb[handle]=fn;
+		return
+					
