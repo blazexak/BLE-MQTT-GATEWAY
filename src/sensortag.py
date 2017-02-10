@@ -28,17 +28,20 @@ import select
 import BLE_MQTT_GATEWAY as gateway
 import threading
 import traceback
+from DEVICE import SensorTag
 
 DEVICE_NAME = "TI Sensor Tag C2541"
 MAC_ADDRESS = "78:C5:E5:6E:58:D1"
 DEVICE_TYPE = "NULL"
-BLE_DELEGATE_HANDLE = [52,56]
-HANDLE = [51, 55, 59, 63, 67]
 
 MQTT_SERVER = "192.168.1.9"
-MQTT_SUBSCRIBING_TOPIC = []
-MQTT_PUBLISHING_TOPIC = ["tempSensor_bean/object_temp", "tempSensor_bean/ambient_temp"]
+MQTT_SUBSCRIBING_TOPIC = ["sensorTag/temperature/rate"]
+MQTT_PUBLISHING_TOPIC = ["sensorTag/temperature"]
+SENSORTAG_POLLING_RATE = {"temperature": 5}
+event = threading.Event()
 VERBOSE = 0
+barometer = None
+datalog = sys.stdout
 
 class MQTT_delegate(object):
     def __init__(self):
@@ -58,95 +61,29 @@ def floatfromhex(h):
         pass
     return t
 
-class SensorTag:
-
-    def __init__( self, bluetooth_adr ):
-        self.con = pexpect.spawn('gatttool -b ' + bluetooth_adr + ' --interactive')
-        self.con.expect('\[LE\]>', timeout=600)
-        print "Preparing to connect. You might need to press the side button..."
-        self.con.sendline('connect')
-        # test for success of connect
-	self.con.expect('Connection successful.*\[LE\]>')
-        # Earlier versions of gatttool returned a different message.  Use this pattern -
-        #self.con.expect('\[CON\].*>')
-        self.cb = {}
-        return
-
-        self.con.expect('\[CON\].*>')
-        self.cb = {}
-        return
-
-    def char_write_cmd( self, handle, value ):
-        # The 0%x for value is VERY naughty!  Fix this!
-        cmd = 'char-write-cmd 0x%02x 0%x' % (handle, value)
-        print cmd
-        self.con.sendline( cmd )
-        return
-
-    def char_read_hnd( self, handle ):
-        self.con.sendline('char-read-hnd 0x%02x' % handle)
-        self.con.expect('descriptor: .*? \r')
-        after = self.con.after
-        rval = after.split()[1:]
-        return [long(float.fromhex(n)) for n in rval]
-
-    # Notification handle = 0x0025 value: 9b ff 54 07
-    def notification_loop( self ):
-        while True:
-	    try:
-              pnum = self.con.expect(['Notification handle = .*? \r', "GLib-WARNING"], timeout=4)
-            except pexpect.TIMEOUT:
-              print "TIMEOUT exception!"
-              continue
-              #break
-	    if pnum==0:
-                after = self.con.after
-	        hxstr = after.split()[3:]
-            	handle = long(float.fromhex(hxstr[0]))
-            	#try:
-	        if True:
-                  self.cb[handle]([long(float.fromhex(n)) for n in hxstr[2:]])
-            	#except:
-                #  print "Error in callback for %x" % handle
-                #  print sys.argv[1]
-                pass
-            elif(pnum == 1):
-                print "Sensor tag resetted."
-                raise
-                try:
-                    self.con.sendline('connect')
-                    
-    #                 self.con.sendline('connect')
-                    self.con.expect('Connection successful.*\[LE\]>', timeout = 4)
-                except:
-                    print "reconnect failed. timeout."
-                    print self.con    
-                
-            else:
-              print "TIMEOUT!!"
-        pass
-
-    def register_cb( self, handle, fn ):
-        self.cb[handle]=fn;
-        return
-
-barometer = None
-datalog = sys.stdout
-
+def TMP006_thread(client, tag):
+    while True:
+        tag.char_write_cmd(0x29,0x01)
+        time.sleep(SENSORTAG_POLLING_RATE['temperature'])
+    
 class SensorCallbacks:
 
     data = {}
 
-    def __init__(self,addr, MQTT_CLIENT):
+    def __init__(self,addr, MQTT_CLIENT, tag):
         self.data['addr'] = addr
         self.client = MQTT_CLIENT
+        self.tag = tag
 
     def tmp006(self,v):
+        self.tag.char_write_cmd(0x29,0x00)
         objT = (v[1]<<8)+v[0]
-        ambT = (v[3]<<8)+v[2]
+        ambT = (v[3]<<8)+v[2]   
         targetT = calcTmpTarget(objT, ambT)
-        self.data['t006'] = targetT
-        print "T006 %.1f" % targetT
+        self.data['t006'] = int(targetT)
+        print "T006 %.1f" % int(targetT)
+        if(int(targetT) > 3):
+            self.client.publish(MQTT_PUBLISHING_TOPIC[0], int(targetT))
 
     def accel(self,v):
         (xyz,mag) = calcAccel(v[0],v[1],v[2])
@@ -214,12 +151,12 @@ def main():
       print "[re]starting.."
 
       tag = SensorTag(bluetooth_adr)
-      cbs = SensorCallbacks(bluetooth_adr, mqtt_gateway.client)
+      cbs = SensorCallbacks(bluetooth_adr, mqtt_gateway.client, tag)
 
       # enable TMP006 sensor
 #       tag.register_cb(0x25,cbs.tmp006)
-#       tag.char_write_cmd(0x29,0x01)
-#       tag.char_write_cmd(0x26,0x0100)
+#       tag.char_write_cmd(0x26,0x0100) 
+#       threading.Thread(target=TMP006_thread,args=(mqtt_gateway.client,tag,)).start()
 # 
 #       # enable accelerometer
 #       tag.register_cb(0x2d,cbs.accel)
