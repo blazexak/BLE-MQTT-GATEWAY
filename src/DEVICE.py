@@ -63,17 +63,11 @@ class Bluetooth_Speaker_Mic(object):
 			subprocess.Popen(["arecord", "-f", "dat", self.record_dir+f])
 			
 			with self.recording_lock:
-				threading.Thread(target = self.countdown_kill, args = ("arecord", COUNTDOWN, CLIENT,TOPIC,)).start()
+				threading.Thread(target = self.countdown_kill, args = ("arecord", COUNTDOWN, CLIENT, TOPIC,IP_ADDRESS,f)).start()
 				print "out"
 				self.recording_event.clear()
 			#print("Lock released after countdown.")
-			if(IP_ADDRESS != None):
-				try:
-					socket.inet_aton(IP_ADDRESS)
-					with self.recording_lock:
-						self.file_transfer(f, IP_ADDRESS) 
-				except socket.error:
-					raise TypeError
+
 		if(arecord_status == -1):
 			self.recording_event.set()						  
 						
@@ -104,7 +98,7 @@ class Bluetooth_Speaker_Mic(object):
 			print(sys.exc_info()[0])
 
 	def file_transfer(self, FILE, IP_ADDRESS):
-		subprocess.call(["ssh", IP_ADDRESS, 'mkdir -p '+ self.record])
+		subprocess.call(["ssh", IP_ADDRESS, 'mkdir -p '+ self.record_dir])
 		subprocess.call(["scp", self.record_dir+FILE, "pi@"+IP_ADDRESS+":"+self.record_dir])
 		subprocess.call(["sudo", "rm", self.record_dir+FILE])	  
 
@@ -128,7 +122,7 @@ class Bluetooth_Speaker_Mic(object):
 			raise		
 
 	# Thread to kill a process after COUNTDOWN seconds
-	def countdown_kill(self,PROCESS_NAME, COUNTDOWN, CLIENT, TOPIC):
+	def countdown_kill(self,PROCESS_NAME, COUNTDOWN, CLIENT, TOPIC, IP_ADDRESS=None, f=None):
 		try:
 			#print "Countdown thread started."
 			for x in range(COUNTDOWN):
@@ -144,8 +138,16 @@ class Bluetooth_Speaker_Mic(object):
 			for x in range(len(pidID)):
 				subprocess.call(["kill", pidID[x]])	
 			#print PROCESS_NAME + " killed"
+		
 		except subprocess.CalledProcessError:
-			print "Error caught: ", sys.exc_info()[0]
+			print "Sending audio file to ", IP_ADDRESS
+			if(IP_ADDRESS != None):
+				try:
+					socket.inet_aton(IP_ADDRESS)
+					with self.recording_lock:
+						self.file_transfer(f, IP_ADDRESS) 
+				except socket.error:
+					raise TypeError				
 		except:
 			print "Unknown error caught! Exit!"
 			raise

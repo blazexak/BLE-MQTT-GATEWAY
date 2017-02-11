@@ -32,8 +32,8 @@ elif(len(sys.argv) == 1):
 DEVICE_NAME = "Bluetooth Speaker MPHBS01"
 MAC_ADDRESS = "00:00:01:04:33:71"
 DEVICE_TYPE = "NULL"
-PLAYBACK_DIR = "/home/pi/git-repos/BLE-MQTT-GATEWAY/audio/"
-RECORD_DIR = "/home/pi/git-repos/BLE-MQTT-GATEWAY/audio/"
+PLAYBACK_DIR = "/home/pi/git-repos/BLE-MQTT-GATEWAY/audio/dir1/"
+RECORD_DIR = "/home/pi/git-repos/BLE-MQTT-GATEWAY/audio/dir2/"
 
 MQTT_SERVER = "192.168.1.9"
 MQTT_SUBSCRIBING_TOPIC = ["multimedia/speaker", "multimedia/microphone"]
@@ -63,7 +63,7 @@ class MQTT_delegate(object):
         elif(msg.topic == "multimedia/microphone"):
             if(multimedia_event.is_set() == False):
                 multimedia_event.set()
-                self.multimedia.record(COUNTDOWN=RECORDING_TIME, CLIENT=client,TOPIC=MQTT_PUBLISHING_TOPIC[1])
+                self.multimedia.record(COUNTDOWN=RECORDING_TIME, IP_ADDRESS = "192.168.1.17", CLIENT=client,TOPIC=MQTT_PUBLISHING_TOPIC[1])
                 multimedia_event.clear()
                 
 def audio_check_thread(client, multimedia, delay):
