@@ -52,14 +52,13 @@ class BLE_delegate(bluepy.btle.DefaultDelegate):
         return data
         
     def handleNotification(self, cHandle, data):
-        if(VERBOSE == 1):
-            logger.info("Data: " + str(data))
-            logger.info("Handle: " + str(cHandle))
-            
         index = HANDLE.index(cHandle)
         payload = self.binasciiToString(data)
-        print "Payload: ", payload
-#         self.client.publish(MQTT_SUBSCRIBING_TOPIC[0], MQTT_PUBLISHING_TOPIC[index] + payload)
+        self.client.publish(MQTT_PUBLISHING_TOPIC[index], payload)
+        
+        if(VERBOSE == 1):
+            logger.info("Data: " + payload)
+            logger.info("Handle: " + str(cHandle))        
         
 class MQTT_delegate(object):
     def __init__(self):
