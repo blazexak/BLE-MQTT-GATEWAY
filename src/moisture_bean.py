@@ -37,7 +37,7 @@ HANDLE = [51, 55, 59, 63, 67]
 
 MQTT_SERVER = "192.168.1.9"
 MQTT_SUBSCRIBING_TOPIC = ["bean/moisture/rate"]
-MQTT_PUBLISHING_TOPIC = ["moisture_bean/moisture", "moisture_bean/temperature"]
+MQTT_PUBLISHING_TOPIC = ["bean/moisture", "bean/moisture/temperature"]
 VERBOSE = 1
 
 class BLE_delegate(bluepy.btle.DefaultDelegate):
