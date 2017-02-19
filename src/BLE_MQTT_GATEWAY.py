@@ -45,7 +45,7 @@ class BLE_GATEWAY(object):
                     self.connected_event.set()
                     print("Connected.")
                     connection = True
-                    self.set_delegate() # Set delegates assigned in self.handle list              
+                    self.set_delegate() # Set delegates assigned in self.handle list
                 
                 while True:
                     time.sleep(1)
