@@ -66,7 +66,7 @@ class BLE_GATEWAY(object):
                     continue
                 else:
                     print e.message, e.code
-                    raise       
+                    raise        
             except:
                 print sys.exc_info()[0]
                 raise
@@ -136,7 +136,10 @@ class BLE_GATEWAY(object):
                 self.device.writeCharacteristic(handle, data, True)
             except bluepy.btle.BTLEException as e:
                 print e.code, e.message
-                print "BTLE exception caught. Continue program and let main thread handles the exception."
+                if(e.code == 1):
+                    print "BLE disconnected"
+                    self.reconnect_blocking()
+                    print "Reconnected"
             except:
                 print sys.exc_info()[0]
                 raise
