@@ -139,6 +139,7 @@ class BLE_GATEWAY(object):
                 if(e.code == 1):
                     print "BLE disconnected"
                     self.reconnect_blocking()
+                    self.set_delegate()
                     print "Reconnected"
             except:
                 print sys.exc_info()[0]
