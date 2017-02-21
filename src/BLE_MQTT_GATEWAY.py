@@ -51,9 +51,7 @@ class BLE_GATEWAY(object):
                     time.sleep(1)
                     with self.BLE_lock:
                         self.notification = self.device.waitForNotifications(1)
-                        if(self.notification == True):
-                            pass
-#                         print("Data received.")
+                print "Exiting inner while loop."
             except bluepy.btle.BTLEException as e:
                 if(e.code == 1):
                     if(connection == True):
@@ -70,6 +68,7 @@ class BLE_GATEWAY(object):
             except:
                 print sys.exc_info()[0]
                 raise
+            print "Exitting outer while loop."
             
     def reset_connection(self):
         self.device.disconnect()
