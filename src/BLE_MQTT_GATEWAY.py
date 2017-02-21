@@ -60,8 +60,6 @@ class BLE_GATEWAY(object):
                         print("BLE device disconnected.")
                         connection = False
                         self.connected_event.clear()
-                    elif(connection == False):
-                        print ".",
                     continue
                 if(e.code == 3):
                     print "Unexpected response received. Retry without reconnecting."                
@@ -134,7 +132,15 @@ class BLE_GATEWAY(object):
     def set_data(self, handle, data):
         with self.BLE_lock:
             self.connected_event.wait()
-            self.device.writeCharacteristic(handle, data, True)
+            try:
+                self.device.writeCharacteristic(handle, data, True)
+            except bluepy.btle.BTLEException as e:
+                print e.code, e.message
+                print "BTLE exception caught. Continue program and let main thread handles the exception."
+            except:
+                print sys.exc_info()[0]
+                raise
+                
             print "Data set: ", data    
         
     def data_updater(self, BLE_HANDLE, DATA):
