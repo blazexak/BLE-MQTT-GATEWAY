@@ -70,8 +70,71 @@ class BLE_GATEWAY(object):
                 raise
             print "Exitting outer while loop."
             
+    def data_updater(self, BLE_HANDLE, DATA):
+        """
+        1. CONNECT TO BLE DEVICE
+        2. BLE.WRITE TO HANDLE
+        3. TRIGGER BLE WAKE BY DISCONNECTING AND RECONNECTING
+        """
+        self.data = []     
+        if(isinstance(DATA, str) == True):
+            self.data.insert(len(self.data), DATA)
+        elif(isinstance(DATA, list) == True):
+            for data in DATA:
+                self.data.insert(len(self.data), data)
+        else:
+            print("Invalid data type for DATA")
+            raise        
+        
+        self.handle = []        
+        if(isinstance(BLE_HANDLE, int) == True):
+            self.handle.insert(len(self.handle), BLE_HANDLE)
+        elif(isinstance(BLE_HANDLE, list) == True):
+            for handle in BLE_HANDLE:
+                self.handle.insert(len(self.handle), handle)
+        else:
+            print("Invalid data type for BLE_HANDLE")
+            raise
+        
+        if(len(self.data) != len(self.handle)):
+            print("Length of data and handle not equal.")
+            raise
+            
+        connection = ""    
+        while True:
+            try:
+                start_time = timeit.default_timer()
+                self.device = bluepy.btle.Peripheral(self.mac)
+                self.connected_event.set()
+                print("Connected.")
+                connection = True
+                for handle in self.handle:
+                    self.device.writeCharacteristic(handle, self.data[self.handle.index(handle)], True)
+                elapsed = timeit.default_timer() - start_time
+                print "time: ", elapsed
+                self.device.disconnect()
+                self.connected_event.clear()
+                time.sleep(3)
+                print "Exit data updater."    
+                return 0
+                    
+            except bluepy.btle.BTLEException as e:
+                print e.message, e.code
+                if(e.code == 1):
+                    if(connection == True):
+                        print("BLE device disconnected.")
+                        connection = False
+                        self.connected_event.clear()
+                    continue
+                else:
+                    raise       
+            except:
+                print sys.exc_info()[0]
+                raise                                       
+            
     def reset_connection(self):
         self.device.disconnect()
+        self.connected_event.clear()
         time.sleep(3)
         self.reconnect_blocking()
         self.set_delegate()   
@@ -80,6 +143,7 @@ class BLE_GATEWAY(object):
         while True:
             try:
                 self.device.connect(self.mac)
+                self.connected_event.set()
                 break
             except BTLEException as e:
                 print e.code, e.message
@@ -146,65 +210,35 @@ class BLE_GATEWAY(object):
                 
             print "Data set: ", data    
         
-    def data_updater(self, BLE_HANDLE, DATA):
-        """
-        1. CONNECT TO BLE DEVICE
-        2. BLE.WRITE TO HANDLE
-        3. TRIGGER BLE WAKE BY DISCONNECTING AND RECONNECTING
-        """
-        self.data = []     
-        if(isinstance(DATA, str) == True):
-            self.data.insert(len(self.data), DATA)
-        elif(isinstance(DATA, list) == True):
-            for data in DATA:
-                self.data.insert(len(self.data), data)
-        else:
-            print("Invalid data type for DATA")
-            raise        
-        
-        self.handle = []        
-        if(isinstance(BLE_HANDLE, int) == True):
-            self.handle.insert(len(self.handle), BLE_HANDLE)
-        elif(isinstance(BLE_HANDLE, list) == True):
-            for handle in BLE_HANDLE:
-                self.handle.insert(len(self.handle), handle)
-        else:
-            print("Invalid data type for BLE_HANDLE")
-            raise
-        
-        if(len(self.data) != len(self.handle)):
-            print("Length of data and handle not equal.")
-            raise
-            
-        connection = ""    
-        while True:
-            try:
-                start_time = timeit.default_timer()
-                self.device = bluepy.btle.Peripheral(self.mac)
-                print("Connected.")
-                connection = True
-                for handle in self.handle:
-                    self.device.writeCharacteristic(handle, self.data[self.handle.index(handle)], True)
-                elapsed = timeit.default_timer() - start_time
-                print "time: ", elapsed
-                self.device.disconnect()
-                time.sleep(3)
-                print "Exit data updater."    
-                return 0
-                    
-            except bluepy.btle.BTLEException as e:
-                print e.message, e.code
-                if(e.code == 1):
-                    if(connection == True):
-                        print("BLE device disconnected.")
+    def diagnostic_callback(self, client, userdata, msg):
+        if(self.connected_event.is_set() == False):
+            print "Loop 1"
+            time.sleep(10)
+            if(msg.payload == "test"):
+                while True:
+                    try:
                         connection = False
-                    continue
-                else:
-                    raise       
-            except:
-                print sys.exc_info()[0]
-                raise
-                                
+                        self.device = bluepy.btle.Peripheral(self.mac)
+                        break
+                    except bluepy.btle.BTLEException as e:
+                        print e.message, e.code
+                        if(e.code == 1):
+                            if(connection == True):
+                                print("BLE device disconnected.")
+                                connection = False
+                                self.connected_event.clear()
+                            continue
+                        else:
+                            raise                 
+                self.connected_event.set()                
+                self.set_data(63, '1')
+                self.device.disconnect()
+                self.connected_event.clear()
+        else:
+            print "loop 2"
+            time.sleep(10)
+            if(msg.payload == "test"):
+                self.set_data(63, '1')
                                 
 class MQTT_GATEWAY(object):
     
@@ -229,6 +263,11 @@ class MQTT_GATEWAY(object):
         print("Connected to MQTT Broker with result code "+str(rc))
         for topic in self.subscribe_topic:
             self.client.subscribe(topic)
+            
+    def add_diagnostic(self, ble_gateway):
+        self.client.subscribe("diagnostic")
+        self.subscribe_topic.append("diagnostic")
+        self.client.message_callback_add("diagnostic", ble_gateway.diagnostic_callback)
 
 class Bluetooth_Multimedia_Gateway(object):
     

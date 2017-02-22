@@ -8,6 +8,7 @@ import binascii
 import time
 import logging
 import logging.config
+import multiprocessing
 
 fullpath = os.path.abspath(sys.argv[0])
 pathname = os.path.dirname(fullpath)
@@ -71,7 +72,10 @@ class MQTT_delegate(object):
         logger.info(msg.topic+" "+str(msg.payload))
         
         if(msg.topic == MQTT_SUBSCRIBING_TOPIC[0]):
-            self.ble_gateway.set_polling_rate(HANDLE[4], msg.payload) 
+            self.ble_gateway.set_polling_rate(HANDLE[4], msg.payload)
+            
+    def diagnostic(self):
+        self.ble_gateway.set_data(HANDLE[3], 1) 
 
 if(__name__ == "__main__"):
     try:
@@ -79,6 +83,9 @@ if(__name__ == "__main__"):
         mqtt_gateway = gateway.MQTT_GATEWAY(MQTT_SERVER, MQTT_SUBSCRIBING_TOPIC, mqtt_delegate.handleNotification)
         ble_delegate = BLE_delegate(mqtt_gateway.client)
         ble_gateway = gateway.BLE_GATEWAY(DEVICE_NAME, MAC_ADDRESS, DEVICE_TYPE,)
+        
+        mqtt_gateway.add_diagnostic(ble_gateway)
+        
         threading.Thread(target = ble_gateway.data_logger_thread,args=(ble_delegate, BLE_DELEGATE_HANDLE,)).start()
         mqtt_delegate.addBLE(ble_gateway)
         threading.Thread(target=mqtt_gateway.client.loop_forever).start()

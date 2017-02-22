@@ -74,7 +74,7 @@ class MQTT_delegate(object):
             state, hsb = check_HSV(msg.payload)
             if state == True:
                 logger.info("Setting data.")
-                self.ble_gateway.set_data(HANDLE[0], msg.payload)            
+                self.ble_gateway.set_data(HANDLE[0], msg.payload)   
 
 # Function for checking HSV string format: "HHH,SSS,BBB"
 # All H,S,B must be integer between 0-255, otherwise invalid
@@ -118,8 +118,8 @@ if(__name__ == "__main__"):
         ble_delegate = BLE_delegate(mqtt_gateway.client)
         ble_gateway = gateway.BLE_GATEWAY(DEVICE_NAME, MAC_ADDRESS, DEVICE_TYPE,)
         run_event = threading.Event()
-        t1 = threading.Thread(target = ble_gateway.data_logger_thread,args=(ble_delegate, BLE_DELEGATE_HANDLE,))
-        t1.start()
+        mqtt_gateway.add_diagnostic(ble_gateway)
+        t1 = threading.Thread(target = ble_gateway.data_logger_thread,args=(ble_delegate, BLE_DELEGATE_HANDLE,)).start()
         mqtt_delegate.addBLE(ble_gateway)
         threading.Thread(target=mqtt_gateway.client.loop_forever).start()
         
