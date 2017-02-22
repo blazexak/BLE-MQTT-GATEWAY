@@ -251,7 +251,6 @@ class SensorTag(object):
 			try:
 				pnum = self.con.expect(['Notification handle = .*? \r', "GLib-WARNING"], timeout=4)
 			except:
-				print ".",
 				continue
 			
 			if(pnum == 0):

@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 import sys
 import os
 import BLE_MQTT_GATEWAY as gateway
@@ -10,7 +9,6 @@ import logging
 import logging.config
 import traceback
 from DEVICE import Bluetooth_Speaker_Mic
-from src.speaker_mic_blue import PLAYBACK_DIR
 
 fullpath = os.path.abspath(sys.argv[0])
 pathname = os.path.dirname(fullpath)
@@ -57,10 +55,7 @@ class MQTT_delegate(object):
         if(msg.topic == "multimedia/speaker"):
             if(multimedia_event.is_set() == False):
                 multimedia_event.set()
-                p1 = multiprocessing.Process(target = multimedia.playback, args=(DELETE = True, CLIENT=client, TOPIC=MQTT_PUBLISHING_TOPIC[2]))
-                p1.start()
-                p1.join()
-#                 self.multimedia.playback(DELETE = True, CLIENT=client, TOPIC=MQTT_PUBLISHING_TOPIC[2])
+                self.multimedia.playback(DELETE = True, CLIENT=client, TOPIC=MQTT_PUBLISHING_TOPIC[2])
                 f = self.multimedia.file_available(PLAYBACK_DIR)
                 if(f == False):
                     client.publish("multimedia/message_box", '0')
@@ -69,9 +64,7 @@ class MQTT_delegate(object):
         elif(msg.topic == "multimedia/microphone"):
             if(multimedia_event.is_set() == False):
                 multimedia_event.set()
-                p2 = multiprocessing.Process(target = multimedia.record, args=(COUNTDOWN=RECORDING_TIME, IP_ADDRESS = "192.168.1.17", CLIENT=client,TOPIC=MQTT_PUBLISHING_TOPIC[1]))
-                p2.start()
-                p2.join()                
+                self.multimedia.record(COUNTDOWN=RECORDING_TIME, IP_ADDRESS = "192.168.1.17", CLIENT=client,TOPIC=MQTT_PUBLISHING_TOPIC[1])
                 multimedia_event.clear()
                 
 def audio_check_thread(client, multimedia, delay):
@@ -79,24 +72,24 @@ def audio_check_thread(client, multimedia, delay):
         try:
             f = multimedia.file_available(PLAYBACK_DIR)
             if(f == False):
-				client.publish("multimedia/message_box", '0')
+                client.publish("multimedia/message_box", '0')
             elif(f == True):
                 client.publish("multimedia/message_box", '1')
             time.sleep(delay)
         except:
             logger.info("Exception caught in audio check thread.")
             logger.info(sys.exc_info()[0])
-            logger.info(traceback.format_exc())	
+            logger.info(traceback.format_exc())    
                             
 
 if(__name__ == "__main__"):
     try:
         mqtt_delegate = MQTT_delegate()
         mqtt_gateway = gateway.MQTT_GATEWAY(MQTT_SERVER, MQTT_SUBSCRIBING_TOPIC, mqtt_delegate.handleNotification)
-        multimedia = Bluetooth_Speaker_Mic(DEVICE_NAME, MAC_ADDRESS, PLAYBACK_DIR, RECORD_DIR	)
+        multimedia = Bluetooth_Speaker_Mic(DEVICE_NAME, MAC_ADDRESS, PLAYBACK_DIR, RECORD_DIR    )
         mqtt_delegate.addMultimedia(multimedia)
         multiprocessing.Process(target=mqtt_gateway.client.loop_forever).start()
-        multiprocessing.Process(target=audio_check_thread, name="Audio Check Thread",args=(mqtt_gateway.client, multimedia,10)).start()
+        threading.Thread(target=audio_check_thread, name="Audio Check Thread",args=(mqtt_gateway.client, multimedia,10)).start()
         print("Thread started.")
         
         while True:
