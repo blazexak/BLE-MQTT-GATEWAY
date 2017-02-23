@@ -61,6 +61,7 @@ class BLE_GATEWAY(object):
                         self.connected_event.clear()
                     continue
                 if(e.code == 3):
+                    print "In data logger"
                     print "Unexpected response received. Retry without reconnecting."                
                     continue
                 else:
