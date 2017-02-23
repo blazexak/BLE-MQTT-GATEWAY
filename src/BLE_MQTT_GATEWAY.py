@@ -236,7 +236,6 @@ class BLE_GATEWAY(object):
                 self.connected_event.clear()
         else:
             print "loop 2"
-            time.sleep(10)
             if(msg.payload == "test"):
                 self.set_data(63, '1')
                                 
