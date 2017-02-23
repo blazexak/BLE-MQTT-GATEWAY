@@ -56,6 +56,7 @@ if(__name__ == "__main__"):
         mqtt_delegate = MQTT_delegate()
         mqtt_gateway = gateway.MQTT_GATEWAY(MQTT_SERVER, MQTT_SUBSCRIBING_TOPIC, mqtt_delegate.handleNotification)
         ble_gateway = gateway.BLE_GATEWAY(DEVICE_NAME, MAC_ADDRESS, DEVICE_TYPE,)
+        mqtt_gateway.add_diagnostic(ble_gateway)
         mqtt_delegate.addBLE(ble_gateway)
         threading.Thread(target=mqtt_gateway.client.loop_forever).start()
         while True:
