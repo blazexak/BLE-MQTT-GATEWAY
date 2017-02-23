@@ -64,7 +64,14 @@ class BLE_GATEWAY(object):
                     continue
                 else:
                     print e.message, e.code
-                    raise        
+                    raise
+            except AttributeError as e:
+                print("Danger! Raised attributeError. Bluepy seems to raise attributeError exception when" 
+                      "BLE disconnected while waitForNotification tried to poll. However, still unsure what"
+                      "other cicumstances might raise this attribute error!")
+                time.sleep(3)
+                continue
+                        
             except:
                 print sys.exc_info()[0]
                 raise
@@ -128,6 +135,12 @@ class BLE_GATEWAY(object):
                     continue
                 else:
                     raise       
+            except AttributeError as e:
+                print("Danger! Raised attributeError. Bluepy seems to raise attributeError exception when" 
+                      "BLE disconnected while waitForNotification tried to poll. However, still unsure what"
+                      "other cicumstances might raise this attribute error!")
+                time.sleep(3)
+                continue                
             except:
                 print sys.exc_info()[0]
                 raise                                       
