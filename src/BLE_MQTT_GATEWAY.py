@@ -251,8 +251,7 @@ class BLE_GATEWAY(object):
                     self.set_data(63, '1')
                     self.device.disconnect()
                     self.connected_event.clear()
-                    time.sleep(3)
-                    self.reconnect_blocking()                   
+                    time.sleep(3)                   
             else:
                 print "loop 2"
                 if(msg.payload == "test"):
