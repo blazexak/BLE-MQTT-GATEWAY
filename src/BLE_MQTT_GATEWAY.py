@@ -228,6 +228,7 @@ class BLE_GATEWAY(object):
             print "Data set: ", data    
         
     def diagnostic_callback(self, client, userdata, msg):
+        print "MQTT message received: ", msg.payload, "MQTT topic: ", msg.topic
         with self.diagnostic_lock:
             if(self.connected_event.is_set() == False):
                 print "Loop 1"
