@@ -139,6 +139,7 @@ class Bluetooth_Speaker_Mic(object):
 			for x in range(len(pidID)):
 				subprocess.call(["kill", pidID[x]])	
 			#print PROCESS_NAME + " killed"
+			print "End of Countdown KIll"
 		
 		except subprocess.CalledProcessError:
 			print "Sending audio file to ", IP_ADDRESS
