@@ -139,6 +139,7 @@ class BLE_GATEWAY(object):
                 else:
                     raise       
             except AttributeError as e:
+                traceback.print_exception()
                 print("Danger! Raised attributeError. Bluepy seems to raise attributeError exception when" 
                       "BLE disconnected while waitForNotification tried to poll. However, still unsure what"
                       "other cicumstances might raise this attribute error!")
