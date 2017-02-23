@@ -16,6 +16,7 @@ class BLE_GATEWAY(object):
         self.mac = BLE_MAC_ADDRESS
         self.device_type = BLE_DEVICE_TYPE
         self.BLE_lock = threading.Lock()
+        self.diagnostic_lock = threading.Lock()
         self.connected_event = threading.Event()
            
     def data_logger_thread(self, BTLE_DELEGATE_CLASS, BLE_HANDLE):
@@ -182,8 +183,8 @@ class BLE_GATEWAY(object):
                             continue
                     else:
                         raise       
-                except AttributeError as e:
-                    print "AttributeError: ", str(e)
+#                 except AttributeError as e:
+#                     print "AttributeError: ", str(e)
                                    
             
     def set_polling_rate(self, handle, rate):
@@ -227,35 +228,36 @@ class BLE_GATEWAY(object):
             print "Data set: ", data    
         
     def diagnostic_callback(self, client, userdata, msg):
-        if(self.connected_event.is_set() == False):
-            print "Loop 1"
-            if(msg.payload == "test"):
-                while True:
-                    try:
-                        connection = False
-                        self.device = bluepy.btle.Peripheral(self.mac)
-                        break
-                    except bluepy.btle.BTLEException as e:
-                        print e.message, e.code
-                        if(e.code == 1):
-                            if(connection == True):
-                                print("BLE device disconnected.")
-                                connection = False
-                                self.connected_event.clear()
-                            continue
-                        else:
-                            raise                 
-                self.connected_event.set()                
-                self.set_data(63, '1')
-                self.device.disconnect()
-                self.connected_event.clear()
-                time.sleep(3)
-                self.reconnect_blocking()                   
-        else:
-            print "loop 2"
-            if(msg.payload == "test"):
-                self.set_data(63, '1')
-            self.reset_connection()
+        with self.diagnostic_lock:
+            if(self.connected_event.is_set() == False):
+                print "Loop 1"
+                if(msg.payload == "test"):
+                    while True:
+                        try:
+                            connection = False
+                            self.device = bluepy.btle.Peripheral(self.mac)
+                            break
+                        except bluepy.btle.BTLEException as e:
+                            print e.message, e.code
+                            if(e.code == 1):
+                                if(connection == True):
+                                    print("BLE device disconnected.")
+                                    connection = False
+                                    self.connected_event.clear()
+                                continue
+                            else:
+                                raise                 
+                    self.connected_event.set()                
+                    self.set_data(63, '1')
+                    self.device.disconnect()
+                    self.connected_event.clear()
+                    time.sleep(3)
+                    self.reconnect_blocking()                   
+            else:
+                print "loop 2"
+                if(msg.payload == "test"):
+                    self.set_data(63, '1')
+                self.reset_connection()
                                 
 class MQTT_GATEWAY(object):
     
