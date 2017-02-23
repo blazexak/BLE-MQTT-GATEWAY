@@ -14,6 +14,7 @@ class Bluetooth_Speaker_Mic(object):
 		self.mac = MAC_ADDRESS
 		self.play_dir = PLAYBACK_DIR
 		self.record_dir = RECORD_DIR
+		self.buffer_dir = "/home/pi/git-repos/BLE-MQTT-GATEWAY/audio/"
 		self.recording_event = threading.Event()	
 		self.recording_lock = threading.Lock()
 		
@@ -60,7 +61,7 @@ class Bluetooth_Speaker_Mic(object):
 			subprocess.call(self.half_volume.split())	
 			subprocess.call(self.chime.split())
 			subprocess.call(self.full_volume.split())
-			subprocess.Popen(["arecord", "-f", "dat", self.record_dir+f])
+			subprocess.Popen(["arecord", "-f", "dat", self.buffer_dir+f])
 			
 			with self.recording_lock:
 				threading.Thread(target = self.countdown_kill, args = ("arecord", COUNTDOWN, CLIENT, TOPIC,IP_ADDRESS,f)).start()
@@ -99,8 +100,8 @@ class Bluetooth_Speaker_Mic(object):
 
 	def file_transfer(self, FILE, IP_ADDRESS):
 		subprocess.call(["ssh", IP_ADDRESS, 'mkdir -p '+ self.record_dir])
-		subprocess.call(["scp", self.record_dir+FILE, "pi@"+IP_ADDRESS+":"+self.record_dir])
-		subprocess.call(["sudo", "rm", self.record_dir+FILE])	  
+		subprocess.call(["scp", self.buffer_dir+FILE, "pi@"+IP_ADDRESS+":"+self.record_dir])
+		subprocess.call(["sudo", "rm", self.buffer_dir+FILE])	  
 
 	# Check for existing process specified by "process_name"
 	# Return 0: If no process was found
