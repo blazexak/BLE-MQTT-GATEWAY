@@ -51,7 +51,8 @@ class BLE_GATEWAY(object):
                 while True:
                     time.sleep(1)
                     with self.BLE_lock:
-                        self.notification = self.device.waitForNotifications(1)
+                        with self.diagnostic_lock:
+                            self.notification = self.device.waitForNotifications(1)
                 print "Exiting inner while loop."
             except bluepy.btle.BTLEException as e:
                 if(e.code == 1):
