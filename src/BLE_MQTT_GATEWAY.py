@@ -233,10 +233,14 @@ class BLE_GATEWAY(object):
                 self.set_data(63, '1')
                 self.device.disconnect()
                 self.connected_event.clear()
+                time.sleep(3)
+                self.reconnect_blocking()
+                self.set_delegate()                   
         else:
             print "loop 2"
             if(msg.payload == "test"):
                 self.set_data(63, '1')
+            self.reset_connection()
                                 
 class MQTT_GATEWAY(object):
     
