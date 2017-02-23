@@ -35,9 +35,9 @@ class Bluetooth_Speaker_Mic(object):
 		if(aplay_status == 0):
 			f = self.files_in_directory(self.play_dir)
 			if (f != -1):
-				#if(CLIENT!=None and TOPIC!=None):
-				#	code = CLIENT.publish(TOPIC, '1')
-				#	print code
+				if(CLIENT!=None and TOPIC!=None):
+					code = CLIENT.publish(TOPIC, '1')
+					print code
 				subprocess.call(self.half_volume.split())
 				subprocess.call(self.chime.split())				
 				subprocess.call(self.full_volume.split())
@@ -54,9 +54,9 @@ class Bluetooth_Speaker_Mic(object):
 		arecord_status = self.subprocess_check_initiate("arecord", "NULL", CLIENT, TOPIC)
 		if(arecord_status == 0): 
 			f = time.strftime("%Y%m%d%H%M%S") + ".wav"
-			#if(CLIENT!=None and TOPIC!=None):
-			#	CLIENT.publish(TOPIC, '1')
-				#CLIENT.publish("bean/button/hsb", "000,255,100")
+			if(CLIENT!=None and TOPIC!=None):
+				CLIENT.publish(TOPIC, '1')
+# 				CLIENT.publish("bean/button/hsb", "000,255,100")
 			subprocess.call(self.half_volume.split())	
 			subprocess.call(self.chime.split())
 			subprocess.call(self.full_volume.split())
@@ -108,7 +108,7 @@ class Bluetooth_Speaker_Mic(object):
 	def subprocess_check_initiate(self,PROCESS_NAME, DEVICE_NAME, CLIENT, TOPIC):
 		try:
 			pidID = subprocess.check_output(["pidof", PROCESS_NAME]).split()
-			#CLIENT.publish(TOPIC, '0')
+			CLIENT.publish(TOPIC, '0')
 			x = 0
 			for x in range(len(pidID)):
 				subprocess.call(["kill", pidID[x]]) 
