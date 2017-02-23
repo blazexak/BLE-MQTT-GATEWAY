@@ -181,7 +181,10 @@ class BLE_GATEWAY(object):
                             self.reconnect_blocking()
                             continue
                     else:
-                        raise                     
+                        raise       
+                except AttributeError as e:
+                    print "AttributeError: ", str(e)
+                                   
             
     def set_polling_rate(self, handle, rate):
         if(type(rate) == str and rate.isdigit() == True):
