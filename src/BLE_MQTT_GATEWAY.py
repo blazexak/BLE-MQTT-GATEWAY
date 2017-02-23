@@ -213,7 +213,6 @@ class BLE_GATEWAY(object):
     def diagnostic_callback(self, client, userdata, msg):
         if(self.connected_event.is_set() == False):
             print "Loop 1"
-            time.sleep(10)
             if(msg.payload == "test"):
                 while True:
                     try:
