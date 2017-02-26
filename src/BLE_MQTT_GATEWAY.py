@@ -164,7 +164,7 @@ class BLE_GATEWAY(object):
                 self.connected_event.set()
                 break
             except BTLEException as e:
-                print e.code, e.message
+#                 print e.code, e.message
                 if(e.code == 1):
                     continue
                 else:
