@@ -243,7 +243,7 @@ class BLE_GATEWAY(object):
                             self.device = bluepy.btle.Peripheral(self.mac)
                             break
                         except bluepy.btle.BTLEException as e:
-                            print e.message, e.code
+#                             print e.message, e.code
                             if(e.code == 1):
                                 if(connection == True):
                                     print("BLE device disconnected.")
