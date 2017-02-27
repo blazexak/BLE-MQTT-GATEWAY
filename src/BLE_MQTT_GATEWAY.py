@@ -268,6 +268,7 @@ class BLE_GATEWAY(object):
 
     def diagnostic_callback(self, client, userdata, msg):
         print "MQTT message received: ", msg.payload, "MQTT topic: ", msg.topic
+        print "hasattr(self, thread_type) : ", hasattr(self, 'thread_type')
         if(msg.payload == "test"):
             with self.diagnostic_lock:
                 if(hasattr(self, 'thread_type') == True and self.thread_type == "logger"):
