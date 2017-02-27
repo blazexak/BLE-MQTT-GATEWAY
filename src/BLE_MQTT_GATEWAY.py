@@ -278,6 +278,8 @@ class BLE_GATEWAY(object):
                         print "set data"
                         self.set_data(63,'1')
                         self.reset_connection()
+                    else:
+                        print "Device is not connected. Not running diagnostic."
                         
                 elif(hasattr(self, 'thread_type') == False or self.thread_type == "updater"):
                     print 'in updater'
