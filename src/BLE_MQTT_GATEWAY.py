@@ -285,6 +285,7 @@ class BLE_GATEWAY(object):
                             try:
                                 connection = False
                                 self.device = bluepy.btle.Peripheral(self.mac)
+                                print("Connected")
                                 self.connected_event.set()
                                 break
                             except bluepy.btle.BTLEException as e:
@@ -308,6 +309,7 @@ class BLE_GATEWAY(object):
                             try:
                                 connection = False
                                 self.device = bluepy.btle.Peripheral(self.mac)
+                                print("Connected")
                                 self.connected_event.set()
                                 break
                             except bluepy.btle.BTLEException as e:
