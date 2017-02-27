@@ -27,6 +27,7 @@ class BLE_GATEWAY(object):
         4. BLOCKING/POLLING
         5. PUBLISH TO MQTT topics
         """
+        self.thread_type = "logger"
         self.delegate = BTLE_DELEGATE_CLASS
         self.delegate_handle = []        
         if(isinstance(BLE_HANDLE, int) == True):
@@ -88,6 +89,7 @@ class BLE_GATEWAY(object):
         2. BLE.WRITE TO HANDLE
         3. TRIGGER BLE WAKE BY DISCONNECTING AND RECONNECTING
         """
+        self.thread_type = "updater"
         self.data = []     
         if(isinstance(DATA, str) == True):
             self.data.insert(len(self.data), DATA)
@@ -232,37 +234,92 @@ class BLE_GATEWAY(object):
                 
             print "Data set: ", data    
         
+#     def diagnostic_callback(self, client, userdata, msg):
+#         print "MQTT message received: ", msg.payload, "MQTT topic: ", msg.topic
+#         with self.diagnostic_lock:
+#             if(self.connected_event.is_set() == False):
+#                 print "Loop 1"
+#                 if(msg.payload == "test"):
+#                     while True:
+#                         try:
+#                             connection = False
+#                             self.device = bluepy.btle.Peripheral(self.mac)
+#                             break
+#                         except bluepy.btle.BTLEException as e:
+# #                             print e.message, e.code
+#                             if(e.code == 1):
+#                                 if(connection == True):
+#                                     print("BLE device disconnected.")
+#                                     connection = False
+#                                     self.connected_event.clear()
+#                                 continue
+#                             else:
+#                                 raise                 
+#                     self.connected_event.set()                
+#                     self.set_data(63, '1')
+#                     self.device.disconnect()
+#                     self.connected_event.clear()
+#                     time.sleep(3)                   
+#             else:
+#                 print "loop 2"
+#                 if(msg.payload == "test"):
+#                     self.set_data(63, '1')
+#                 self.reset_connection()
+
     def diagnostic_callback(self, client, userdata, msg):
         print "MQTT message received: ", msg.payload, "MQTT topic: ", msg.topic
-        with self.diagnostic_lock:
-            if(self.connected_event.is_set() == False):
-                print "Loop 1"
-                if(msg.payload == "test"):
-                    while True:
-                        try:
-                            connection = False
-                            self.device = bluepy.btle.Peripheral(self.mac)
-                            break
-                        except bluepy.btle.BTLEException as e:
-#                             print e.message, e.code
-                            if(e.code == 1):
-                                if(connection == True):
-                                    print("BLE device disconnected.")
-                                    connection = False
-                                    self.connected_event.clear()
-                                continue
-                            else:
-                                raise                 
-                    self.connected_event.set()                
-                    self.set_data(63, '1')
-                    self.device.disconnect()
-                    self.connected_event.clear()
-                    time.sleep(3)                   
-            else:
-                print "loop 2"
-                if(msg.payload == "test"):
-                    self.set_data(63, '1')
-                self.reset_connection()
+        if(msg.payload == "test"):
+            with self.diagnostic_lock:
+                if(self.thread_type == "logger"):
+                    if(self.connected_event.is_set() == True):
+                        self.set_data(63,1)
+                        self.reset_connection()
+                        
+                elif(self.thread_type == "updater"):
+                    if(self.connected_event.is_set() == True):
+                        while(self.connected_event.is_set() == True):
+                            pass
+                        while True:
+                            try:
+                                connection = False
+                                self.device = bluepy.btle.Peripheral(self.mac)
+                                break
+                            except bluepy.btle.BTLEException as e:
+    #                             print e.message, e.code
+                                if(e.code == 1):
+                                    if(connection == True):
+                                        print("BLE device disconnected.")
+                                        connection = False
+                                        self.connected_event.clear()
+                                    continue
+                                else:
+                                    raise                 
+                        self.connected_event.set()                
+                        self.set_data(63, '1')
+                        self.device.disconnect()
+                        self.connected_event.clear()
+                        time.sleep(3)                       
+                    elif(self.connected_event.is_set() == False):
+                        while True:
+                            try:
+                                connection = False
+                                self.device = bluepy.btle.Peripheral(self.mac)
+                                break
+                            except bluepy.btle.BTLEException as e:
+    #                             print e.message, e.code
+                                if(e.code == 1):
+                                    if(connection == True):
+                                        print("BLE device disconnected.")
+                                        connection = False
+                                        self.connected_event.clear()
+                                    continue
+                                else:
+                                    raise                 
+                        self.connected_event.set()                
+                        self.set_data(63, '1')
+                        self.device.disconnect()
+                        self.connected_event.clear()
+                        time.sleep(3)                          
                                 
 class MQTT_GATEWAY(object):
     
