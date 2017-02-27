@@ -275,6 +275,7 @@ class BLE_GATEWAY(object):
                 if(hasattr(self, 'thread_type') == True and self.thread_type == "logger"):
                     print "in logger"
                     if(self.connected_event.is_set() == True):
+                        print "set data"
                         self.set_data(63,'1')
                         self.reset_connection()
                         
