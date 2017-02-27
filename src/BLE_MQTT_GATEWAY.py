@@ -278,6 +278,7 @@ class BLE_GATEWAY(object):
                         
                 elif(hasattr(self, 'thread_type') == False or self.thread_type == "updater"):
                     if(self.connected_event.is_set() == True):
+                        print "is connected"
                         while(self.connected_event.is_set() == True):
                             pass
                         while True:
@@ -301,6 +302,7 @@ class BLE_GATEWAY(object):
                         self.connected_event.clear()
                         time.sleep(3)                       
                     elif(self.connected_event.is_set() == False):
+                        print "not connected"
                         while True:
                             try:
                                 connection = False
