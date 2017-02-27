@@ -127,6 +127,7 @@ class BLE_GATEWAY(object):
                 elapsed = timeit.default_timer() - start_time
                 print "time: ", elapsed
                 self.device.disconnect()
+                print "Disconnected"
                 self.connected_event.clear()
                 time.sleep(3)
                 print "Exit data updater."    
@@ -272,11 +273,13 @@ class BLE_GATEWAY(object):
         if(msg.payload == "test"):
             with self.diagnostic_lock:
                 if(hasattr(self, 'thread_type') == True and self.thread_type == "logger"):
+                    print "in logger"
                     if(self.connected_event.is_set() == True):
                         self.set_data(63,'1')
                         self.reset_connection()
                         
                 elif(hasattr(self, 'thread_type') == False or self.thread_type == "updater"):
+                    print 'in updater'
                     if(self.connected_event.is_set() == True):
                         print "is connected"
                         while(self.connected_event.is_set() == True):
@@ -297,10 +300,10 @@ class BLE_GATEWAY(object):
                                         self.connected_event.clear()
                                     continue
                                 else:
-                                    raise                 
-                        self.connected_event.set()                
+                                    raise                         
                         self.set_data(63, '1')
                         self.device.disconnect()
+                        print("Disconnected")
                         self.connected_event.clear()
                         time.sleep(3)                       
                     elif(self.connected_event.is_set() == False):
@@ -321,10 +324,10 @@ class BLE_GATEWAY(object):
                                         self.connected_event.clear()
                                     continue
                                 else:
-                                    raise                 
-                        self.connected_event.set()                
+                                    raise                         
                         self.set_data(63, '1')
                         self.device.disconnect()
+                        print("Disconnected")
                         self.connected_event.clear()
                         time.sleep(3)                          
                                 
