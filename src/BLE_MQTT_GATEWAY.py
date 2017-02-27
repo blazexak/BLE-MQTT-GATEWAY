@@ -270,12 +270,12 @@ class BLE_GATEWAY(object):
         print "MQTT message received: ", msg.payload, "MQTT topic: ", msg.topic
         if(msg.payload == "test"):
             with self.diagnostic_lock:
-                if(self.thread_type == "logger"):
+                if(hasattr(self, 'thread_type') == True and self.thread_type == "logger"):
                     if(self.connected_event.is_set() == True):
                         self.set_data(63,'1')
                         self.reset_connection()
                         
-                elif(self.thread_type == "updater"):
+                elif(hasattr(self, 'thread_type') == False or self.thread_type == "updater"):
                     if(self.connected_event.is_set() == True):
                         while(self.connected_event.is_set() == True):
                             pass
