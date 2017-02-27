@@ -272,7 +272,7 @@ class BLE_GATEWAY(object):
             with self.diagnostic_lock:
                 if(self.thread_type == "logger"):
                     if(self.connected_event.is_set() == True):
-                        self.set_data(63,1)
+                        self.set_data(63,'1')
                         self.reset_connection()
                         
                 elif(self.thread_type == "updater"):
