@@ -66,6 +66,7 @@ class BLE_GATEWAY(object):
                     print "Unexpected response received. Retry without reconnecting."                
                     continue
                 else:
+                    print "In else loop"
                     print e.message, e.code
                     raise
             except AttributeError as e:
