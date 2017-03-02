@@ -30,14 +30,18 @@ if(len(sys.argv) == 1):
     sys.exit()
 elif(len(sys.argv) == 2 and re.match("[0-9a-f]{2}([-:])[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", sys.argv[1].lower())):
     print "Second input is valid MAC Address."
-    mac = sys.argv
+    MAC_ADDRESS = sys.argv[1]
 else:
     print "Invalid arguments."
     sys.exit()
     
 HANDLE = []
-BLE_DELEGATE_HANDLE = []
-MQTT_SERVER = "192.168.1.6"
+DEVICE_NAME = "Sensor Tag"
+DEVICE_TYPE = ""
+# DELEGATE LIST:
+#     BUTTON: 96
+BLE_DELEGATE_HANDLE = [38,96]
+MQTT_SERVER = "192.168.1.9"
 MQTT_SUBSCRIBING_TOPIC = []
 MQTT_PUBLISHING_TOPIC = []
 VERBOSE = 1
@@ -54,16 +58,17 @@ class BLE_delegate(bluepy.btle.DefaultDelegate):
         return data
         
     def handleNotification(self, cHandle, data):
-            
-        if(cHandle == 51):
-            index = HANDLE.index(cHandle)
-            payload = self.binasciiToString(data)
-            (result, mid) = self.client.publish(MQTT_PUBLISHING_TOPIC[0] , DEVICE_CODE + payload)
-            print "Pubish result: ", result
-            
-        if(VERBOSE == 1):
-            logger.info("Data: " + self.binasciiToString(data))
-            logger.info("Handle: " + str(cHandle))
+        payload = self.binasciiToString(data)
+        print cHandle, payload            
+#         if(cHandle == 95):
+#             index = HANDLE.index(cHandle)
+#             payload = self.binasciiToString(data)
+#             (result, mid) = self.client.publish(MQTT_PUBLISHING_TOPIC[0] , DEVICE_CODE + payload)
+#             print "Pubish result: ", result
+#             
+#         if(VERBOSE == 1):
+#             logger.info("Data: " + self.binasciiToString(data))
+#             logger.info("Handle: " + str(cHandle))
             
 class MQTT_delegate(object):
     def __init__(self):

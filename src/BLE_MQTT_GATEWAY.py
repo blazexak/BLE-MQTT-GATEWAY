@@ -50,7 +50,7 @@ class BLE_GATEWAY(object):
                     self.set_delegate() # Set delegates assigned in self.handle list
                 
                 while True:
-                    time.sleep(1)
+                    time.sleep(0.1)
                     with self.BLE_lock:
                         with self.diagnostic_lock:
                             self.notification = self.device.waitForNotifications(0.1)
@@ -71,7 +71,7 @@ class BLE_GATEWAY(object):
                     print e.message, e.code
                     raise
             except AttributeError as e:
-                traceback.print_exception()
+                traceback.print_exc()
                 print("Danger! Raised attributeError. Bluepy seems to raise attributeError exception when " 
                       "BLE disconnected while waitForNotification tried to poll. However, still unsure what "
                       "other cicumstances might raise this attribute error!")
