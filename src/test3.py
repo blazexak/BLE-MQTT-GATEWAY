@@ -9,6 +9,7 @@ import time
 import logging
 import logging.config
 import re
+import struct
 
 fullpath = os.path.abspath(sys.argv[0])
 pathname = os.path.dirname(fullpath)
@@ -45,7 +46,8 @@ MQTT_SERVER = "192.168.1.9"
 MQTT_SUBSCRIBING_TOPIC = []
 MQTT_PUBLISHING_TOPIC = []
 VERBOSE = 1
-
+tosigned = lambda n: float(n-0x10000) if n>0x7fff else float(n)
+tosignedbyte = lambda n: float(n-0x100) if n>0x7f else float(n)
 class BLE_delegate(bluepy.btle.DefaultDelegate):
     def __init__(self, mqtt_client):
         bluepy.btle.DefaultDelegate.__init__(self)
@@ -58,8 +60,28 @@ class BLE_delegate(bluepy.btle.DefaultDelegate):
         return data
         
     def handleNotification(self, cHandle, data):
-        payload = self.binasciiToString(data)
-        print cHandle, payload            
+#         payload = self.binasciiToString(data)
+        print cHandle, data, self.binasciiToString(data)
+        (objT, ambT) = struct.unpack('<hh', data)
+        objT = tosigned(objT)
+        ambT = tosigned(ambT)
+        m_tmpAmb = ambT/128.0
+        Vobj2 = objT * 0.00000015625
+        Tdie2 = m_tmpAmb + 273.15
+        S0 = 6.4E-14            # Calibration factor
+        a1 = 1.75E-3
+        a2 = -1.678E-5
+        b0 = -2.94E-5
+        b1 = -5.7E-7
+        b2 = 4.63E-9
+        c2 = 13.4
+        Tref = 298.15
+        S = S0*(1+a1*(Tdie2 - Tref)+a2*pow((Tdie2 - Tref),2))
+        Vos = b0 + b1*(Tdie2 - Tref) + b2*pow((Tdie2 - Tref),2)
+        fObj = (Vobj2 - Vos) + c2*pow((Vobj2 - Vos),2)
+        tObj = pow(pow(Tdie2,4) + (fObj/S),.25)
+        tObj = (tObj - 273.15)
+        print "Object temp: ", tObj        
 #         if(cHandle == 95):
 #             index = HANDLE.index(cHandle)
 #             payload = self.binasciiToString(data)
@@ -83,6 +105,20 @@ class MQTT_delegate(object):
         if(msg.topic == MQTT_SUBSCRIBING_TOPIC[0]):
             self.ble_gateway.set_polling_rate(HANDLE[4], msg.payload)
                 
+def sensorTimer(ble_gateway, handle, polling_rate):
+    #enable sensor
+    # wait for x seconds
+    # disable sensors
+    # time.sleep(polling_rate)
+    while True:
+        print "sensor timer started"
+        ble_gateway.set_data(handle, struct.pack("B", 0x01))
+#         time.sleep(1.5)
+#         ble_gateway.set_data(handle, struct.pack("B", 0x00))
+#         print "going to sleep"
+#         time.sleep(polling_rate)    
+    
+
 if(__name__ == "__main__"):
     try:
         mqtt_delegate = MQTT_delegate()
@@ -91,6 +127,8 @@ if(__name__ == "__main__"):
         ble_gateway = gateway.BLE_GATEWAY(DEVICE_NAME, MAC_ADDRESS, DEVICE_TYPE,)
         mqtt_gateway.add_diagnostic(ble_gateway)
         threading.Thread(target = ble_gateway.data_logger_thread,args=(ble_delegate, BLE_DELEGATE_HANDLE,)).start()
+        ble_gateway.set_data(41, struct.pack("B", 0x01))
+#         tmp006 = threading.Thread(target = sensorTimer, args=(ble_gateway, 41, 0.5,)).start()
         mqtt_delegate.addBLE(ble_gateway)
         threading.Thread(target=mqtt_gateway.client.loop_forever).start()
         while True:

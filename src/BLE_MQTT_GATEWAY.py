@@ -8,10 +8,15 @@ import pexpect
 import traceback
 from bluepy.btle import BTLEException
 import timeit
+import logging
+import logging.config
 
+# create module logger
+module_logger = logging.getLogger("exampleApp."+__name__)
 class BLE_GATEWAY(object):
     
     def __init__(self, BLE_DEVICE_NAME, BLE_MAC_ADDRESS, BLE_DEVICE_TYPE):
+        module_logger.info("Creating BLE GATEWAY object.")
         self.name = BLE_DEVICE_NAME
         self.mac = BLE_MAC_ADDRESS
         self.device_type = BLE_DEVICE_TYPE
@@ -337,6 +342,7 @@ class BLE_GATEWAY(object):
 class MQTT_GATEWAY(object):
     
     def __init__(self, MQTT_BROKER_ADDRESS, SUBSCRIBE_TOPIC, MQTT_DELEGATE):
+        module_logger.info("Creating MQTT GATEWAY object.")
         self.broker_address = MQTT_BROKER_ADDRESS
         self.subscribe_topic = []        
         if(isinstance(SUBSCRIBE_TOPIC, str) == True):

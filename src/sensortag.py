@@ -78,7 +78,11 @@ class SensorCallbacks:
     def tmp006(self,v):
         self.tag.char_write_cmd(0x29,0x00)
         objT = (v[1]<<8)+v[0]
-        ambT = (v[3]<<8)+v[2]   
+        ambT = (v[3]<<8)+v[2]
+        print "v: ", v
+        print objT
+        print ambT
+#         time.sleep(100)  
         targetT = calcTmpTarget(objT, ambT)
         self.data['t006'] = int(targetT)
         print "T006 %.1f" % int(targetT)
@@ -153,10 +157,10 @@ def main():
       tag = SensorTag(bluetooth_adr)
       cbs = SensorCallbacks(bluetooth_adr, mqtt_gateway.client, tag)
 
-      # enable TMP006 sensor
-#       tag.register_cb(0x25,cbs.tmp006)
-#       tag.char_write_cmd(0x26,0x0100) 
-#       threading.Thread(target=TMP006_thread,args=(mqtt_gateway.client,tag,)).start()
+#     enable TMP006 sensor
+      tag.register_cb(0x25,cbs.tmp006)
+      tag.char_write_cmd(0x26,0x0100) 
+      threading.Thread(target=TMP006_thread,args=(mqtt_gateway.client,tag,)).start()
 # 
 #       # enable accelerometer
 #       tag.register_cb(0x2d,cbs.accel)

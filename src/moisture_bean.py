@@ -22,7 +22,7 @@ except IOError:
     f = open(log_dir + log_file, 'w')
 f.close()
     
-logging.config.fileConfig('logging.conf', defaults={'logfilename': log_dir + log_file})
+logging.config.fileConfig('logging.conf', defaults={'logfilename': log_dir + log_file}, disable_existing_loggers=False)
 logger = logging.getLogger("exampleApp")
 
 if(len(sys.argv) == 2 and sys.argv[1] == "test"):
@@ -36,7 +36,7 @@ DEVICE_TYPE = "NULL"
 BLE_DELEGATE_HANDLE = [52,56]
 HANDLE = [51, 55, 59, 63, 67]
 
-MQTT_SERVER = "192.168.1.9"
+MQTT_SERVER = "192.168.1.218"
 MQTT_SUBSCRIBING_TOPIC = ["bean/moisture/rate"]
 MQTT_PUBLISHING_TOPIC = ["bean/moisture", "bean/moisture/temperature"]
 VERBOSE = 1
