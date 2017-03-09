@@ -127,10 +127,11 @@ class BLE_GATEWAY(object):
                 self.connected_event.set()
                 module_logger.info("Connected.")
                 connection = True
+                print "Data type: ", type(self.data), "Length of data: ", len(self.data)
                 for handle in self.handle:
                     self.device.writeCharacteristic(handle, self.data[self.handle.index(handle)], True)
                 elapsed = timeit.default_timer() - start_time
-                module_logger.debug("time: ", elapsed)
+                module_logger.debug("time: " + str(elapsed))
                 self.device.disconnect()
                 module_logger.info("Disconnected")
                 self.connected_event.clear()
@@ -283,7 +284,9 @@ class BLE_GATEWAY(object):
                     if(self.connected_event.is_set() == True):
                         module_logger.debug("set data")
                         self.set_data(63,'1')
+                        module_logger.debug("after set data")
                         self.reset_connection()
+                        module_logger.debug("after reconnecting")
                     else:
                         module_logger.info("Device is not connected. Not running diagnostic.")
                         
