@@ -5,7 +5,11 @@ import socket
 import sys
 import threading
 import pexpect
+import logging
+import logging.config
 
+# create module logger
+module_logger = logging.getLogger("exampleApp."+__name__)
 
 class Bluetooth_Speaker_Mic(object):
 	

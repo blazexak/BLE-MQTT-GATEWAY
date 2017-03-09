@@ -24,7 +24,7 @@ class BLE_GATEWAY(object):
         self.diagnostic_lock = threading.Lock()
         self.connected_event = threading.Event()
            
-    def data_logger_thread(self, BTLE_DELEGATE_CLASS, BLE_HANDLE):
+    def data_logger_thread(self, BTLE_DELEGATE_CLASS, BLE_HANDLE, EVENT_RUN=None):
         """
         1. CONNECT TO BLE Device
         2. CREATE BTLE DELEGATE CLASS & SET DELEGATE
@@ -45,7 +45,7 @@ class BLE_GATEWAY(object):
         
         module_logger.info("Connecting to BLE device.")
         connection = False  
-        while True:
+        while EVENT_RUN.is_set() == False:
             try:
                 if(connection == False):
                     self.device = bluepy.btle.Peripheral(self.mac)
@@ -54,7 +54,7 @@ class BLE_GATEWAY(object):
                     connection = True
                     self.set_delegate() # Set delegates assigned in self.handle list
                 
-                while True:
+                while EVENT_RUN.is_set() == False:
                     time.sleep(0.1)
                     with self.BLE_lock:
                         with self.diagnostic_lock:
@@ -79,12 +79,12 @@ class BLE_GATEWAY(object):
                 module_logger.warning("Danger! Raised attributeError. Bluepy seems to raise attributeError exception when " 
                       "BLE disconnected while waitForNotification tried to poll. However, still unsure what "
                       "other cicumstances might raise this attribute error!")
-                module_logger.exception()
+                module_logger.exception("In data_logger: Attribute error caught.")
                 time.sleep(3)
                 continue
                         
             except:
-                module_logger.exception()
+                module_logger.exception("In data_logger: Unknown error caught.")
                 raise
             module_logger.debug("Exitting outer while loop.")
             
@@ -152,11 +152,11 @@ class BLE_GATEWAY(object):
                 module_logger.warning("Danger! Raised attributeError. Bluepy seems to raise attributeError exception when" 
                       "BLE disconnected while waitForNotification tried to poll. However, still unsure what"
                       "other cicumstances might raise this attribute error!")
-                module_logger.exception()
+                module_logger.exception("In data_updater: Attribute error caught.")
                 time.sleep(3)
                 continue                
             except:
-                module_logger.exception()
+                module_logger.exception("In data_updater: Unknown error caught.")
                 raise                                       
             
     def reset_connection(self):
@@ -235,8 +235,7 @@ class BLE_GATEWAY(object):
                     self.set_delegate()
                     module_logger.info("Reconnected")
             except:
-                module_logger.error("In set_data: Unknown error caught.")
-                module_logger.exception()
+                module_logger.exception("In set_data: Unknown error caught.")
                 raise
                 
             module_logger.info("Data set: " + data)    

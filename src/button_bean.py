@@ -117,9 +117,10 @@ if(__name__ == "__main__"):
         mqtt_gateway = gateway.MQTT_GATEWAY(MQTT_SERVER, MQTT_SUBSCRIBING_TOPIC, mqtt_delegate.handleNotification)
         ble_delegate = BLE_delegate(mqtt_gateway.client)
         ble_gateway = gateway.BLE_GATEWAY(DEVICE_NAME, MAC_ADDRESS, DEVICE_TYPE,)
-        run_event = threading.Event()
+        event_stop = threading.Event()
         mqtt_gateway.add_diagnostic(ble_gateway)
-        t1 = threading.Thread(target = ble_gateway.data_logger_thread,args=(ble_delegate, BLE_DELEGATE_HANDLE,)).start()
+        t1 = threading.Thread(target = ble_gateway.data_logger_thread,args=(ble_delegate, BLE_DELEGATE_HANDLE,event_stop))
+        t1.start()
         mqtt_delegate.addBLE(ble_gateway)
         threading.Thread(target=mqtt_gateway.client.loop_forever).start()
         
@@ -127,7 +128,11 @@ if(__name__ == "__main__"):
             time.sleep(0.001)
 
     except KeyboardInterrupt:
+        logger.info("Keyboard Interrupted")
+        event_stop.set()
+        t1.join()
         mqtt_gateway.client.disconnect()
+        logger.info("Exiting script.")
         sys.exit()
 
     except:

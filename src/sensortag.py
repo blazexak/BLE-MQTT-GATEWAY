@@ -22,6 +22,9 @@
 import pexpect
 import sys
 import time
+import os
+import logging
+import logging.config
 from sensor_calcs import *
 import json
 import select
@@ -30,6 +33,26 @@ import threading
 import traceback
 from DEVICE import SensorTag
 
+fullpath = os.path.abspath(sys.argv[0])
+pathname = os.path.dirname(fullpath)
+index = len(fullpath) - fullpath[::-1].index('/') -1 
+log_file = fullpath[index+1:-3] + ".log"
+log_dir = pathname[0:-4] + "/log/"
+
+try:
+    f = open(log_dir + log_file, 'r')
+except IOError:
+    f = open(log_dir + log_file, 'w')
+f.close()
+    
+logging.config.fileConfig('logging.conf', defaults={'logfilename': log_dir + log_file})
+logger = logging.getLogger("exampleApp")
+
+if(len(sys.argv) == 2 and sys.argv[1] == "test"):
+    pass
+elif(len(sys.argv) == 1):
+    time.sleep(120)
+    
 DEVICE_NAME = "TI Sensor Tag C2541"
 MAC_ADDRESS = "78:C5:E5:6E:58:D1"
 DEVICE_TYPE = "NULL"
@@ -131,10 +154,10 @@ class SensorCallbacks:
     def keyPress(self, v):
         button = str(v[0]<<8)
         if(button == "512"):
-            print "Button 1 pressed."
+            logger.infl("Button 1 pressed.")
             self.client.publish("sensorTag/button", '1')
         elif(button == "256"):
-            print "Button 2 pressed."
+            logger.info("Button 2 pressed.")
             self.client.publish("sensorTag/button", '2')       
 
 def main():
@@ -158,9 +181,9 @@ def main():
       cbs = SensorCallbacks(bluetooth_adr, mqtt_gateway.client, tag)
 
 #     enable TMP006 sensor
-      tag.register_cb(0x25,cbs.tmp006)
-      tag.char_write_cmd(0x26,0x0100) 
-      threading.Thread(target=TMP006_thread,args=(mqtt_gateway.client,tag,)).start()
+#       tag.register_cb(0x25,cbs.tmp006)
+#       tag.char_write_cmd(0x26,0x0100) 
+#       threading.Thread(target=TMP006_thread,args=(mqtt_gateway.client,tag,)).start()
 # 
 #       # enable accelerometer
 #       tag.register_cb(0x2d,cbs.accel)
