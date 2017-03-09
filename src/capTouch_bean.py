@@ -14,6 +14,7 @@ pathname = os.path.dirname(fullpath)
 index = len(fullpath) - fullpath[::-1].index('/') -1 
 log_file = fullpath[index+1:-3] + ".log"
 log_dir = pathname[0:-4] + "/log/"
+src_dir = str(pathname[0:-4] + "/src/")
 
 try:
     f = open(log_dir + log_file, 'r')
@@ -21,7 +22,7 @@ except IOError:
     f = open(log_dir + log_file, 'w')
 f.close()
     
-logging.config.fileConfig('logging.conf', defaults={'logfilename': log_dir + log_file})
+logging.config.fileConfig(src_dir + 'logging.conf', defaults={'logfilename': log_dir + log_file})
 logger = logging.getLogger("exampleApp")
 
 if(len(sys.argv) == 2 and sys.argv[1] == "test"):
