@@ -36,7 +36,7 @@ DEVICE_TYPE = "NULL"
 BLE_DELEGATE_HANDLE = [52,56]
 HANDLE = [51, 55, 59, 63, 67]
 
-MQTT_SERVER = "192.168.1.218"
+MQTT_SERVER = "192.168.1.9"
 MQTT_SUBSCRIBING_TOPIC = ["bean/moisture/rate"]
 MQTT_PUBLISHING_TOPIC = ["bean/moisture", "bean/moisture/temperature"]
 VERBOSE = 1

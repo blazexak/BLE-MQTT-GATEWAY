@@ -16,7 +16,7 @@ module_logger = logging.getLogger("exampleApp."+__name__)
 class BLE_GATEWAY(object):
     
     def __init__(self, BLE_DEVICE_NAME, BLE_MAC_ADDRESS, BLE_DEVICE_TYPE):
-        module_logger.info("Creating BLE GATEWAY object.")
+        module_logger.debug("Creating BLE GATEWAY object.")
         self.name = BLE_DEVICE_NAME
         self.mac = BLE_MAC_ADDRESS
         self.device_type = BLE_DEVICE_TYPE
@@ -41,16 +41,16 @@ class BLE_GATEWAY(object):
             for delegate_handle in BLE_HANDLE:
                 self.delegate_handle.insert(len(self.delegate_handle), delegate_handle)
         else:
-            print("Invalid data type for BLE_HANDLE")
+            module_logger.warning("Invalid data type for BLE_HANDLE")
         
-        print("Connecting to BLE device.")
+        module_logger.info("Connecting to BLE device.")
         connection = False  
         while True:
             try:
                 if(connection == False):
                     self.device = bluepy.btle.Peripheral(self.mac)
                     self.connected_event.set()
-                    print("Connected.")
+                    module_logger.info("Connected.")
                     connection = True
                     self.set_delegate() # Set delegates assigned in self.handle list
                 
@@ -59,34 +59,34 @@ class BLE_GATEWAY(object):
                     with self.BLE_lock:
                         with self.diagnostic_lock:
                             self.notification = self.device.waitForNotifications(0.1)
-                print "Exiting inner while loop."
+                module_logger.debug("Exiting inner while loop.")
             except bluepy.btle.BTLEException as e:
                 if(e.code == 1):
                     if(connection == True):
-                        print("BLE device disconnected.")
+                        module_logger.info("BLE device disconnected.")
                         connection = False
                         self.connected_event.clear()
                     continue
                 if(e.code == 3):
-                    print "In data logger"
-                    print "Unexpected response received. Retry without reconnecting."                
+                    module_logger.debug("In data logger")
+                    module_logger.debug("Unexpected response received. Retry without reconnecting.")                
                     continue
                 else:
-                    print "In else loop"
-                    print e.message, e.code
+                    module_logger.debug("In else loop")
+                    module_logger.error(e.message, e.code)
                     raise
             except AttributeError as e:
-                traceback.print_exc()
-                print("Danger! Raised attributeError. Bluepy seems to raise attributeError exception when " 
+                module_logger.warning("Danger! Raised attributeError. Bluepy seems to raise attributeError exception when " 
                       "BLE disconnected while waitForNotification tried to poll. However, still unsure what "
                       "other cicumstances might raise this attribute error!")
+                module_logger.exception()
                 time.sleep(3)
                 continue
                         
             except:
-                print sys.exc_info()[0]
+                module_logger.exception()
                 raise
-            print "Exitting outer while loop."
+            module_logger.debug("Exitting outer while loop.")
             
     def data_updater(self, BLE_HANDLE, DATA):
         """
@@ -102,7 +102,7 @@ class BLE_GATEWAY(object):
             for data in DATA:
                 self.data.insert(len(self.data), data)
         else:
-            print("Invalid data type for DATA")
+            module_logger.error("Invalid data type for DATA")
             raise        
         
         self.handle = []        
@@ -112,11 +112,11 @@ class BLE_GATEWAY(object):
             for handle in BLE_HANDLE:
                 self.handle.insert(len(self.handle), handle)
         else:
-            print("Invalid data type for BLE_HANDLE")
+            module_logger.error("Invalid data type for BLE_HANDLE")
             raise
         
         if(len(self.data) != len(self.handle)):
-            print("Length of data and handle not equal.")
+            module_logger.error("Length of data and handle not equal.")
             raise
             
         connection = ""    
@@ -125,38 +125,38 @@ class BLE_GATEWAY(object):
                 start_time = timeit.default_timer()
                 self.device = bluepy.btle.Peripheral(self.mac)
                 self.connected_event.set()
-                print("Connected.")
+                module_logger.info("Connected.")
                 connection = True
                 for handle in self.handle:
                     self.device.writeCharacteristic(handle, self.data[self.handle.index(handle)], True)
                 elapsed = timeit.default_timer() - start_time
-                print "time: ", elapsed
+                module_logger.debug("time: ", elapsed)
                 self.device.disconnect()
-                print "Disconnected"
+                module_logger.info("Disconnected")
                 self.connected_event.clear()
                 time.sleep(3)
-                print "Exit data updater."    
+                module_logger.info("Exit data updater.")    
                 return 0
                     
             except bluepy.btle.BTLEException as e:
 #                 print e.message, e.code
                 if(e.code == 1):
                     if(connection == True):
-                        print("BLE device disconnected.")
+                        module_logger.info("BLE device disconnected.")
                         connection = False
                         self.connected_event.clear()
                     continue
                 else:
                     raise       
             except AttributeError as e:
-                traceback.print_exception()
-                print("Danger! Raised attributeError. Bluepy seems to raise attributeError exception when" 
+                module_logger.warning("Danger! Raised attributeError. Bluepy seems to raise attributeError exception when" 
                       "BLE disconnected while waitForNotification tried to poll. However, still unsure what"
                       "other cicumstances might raise this attribute error!")
+                module_logger.exception()
                 time.sleep(3)
                 continue                
             except:
-                print sys.exc_info()[0]
+                module_logger.exception()
                 raise                                       
             
     def reset_connection(self):
@@ -188,7 +188,7 @@ class BLE_GATEWAY(object):
                     self.device.writeCharacteristic(delegate_handle, struct.pack('<bb',0x01,0x00), True)      
                     break
                 except BTLEException as e: 
-                    print e.code, e.message  
+                    module_logger.warning(e.code, e.message)  
                     if(e.code == 1):
                         continue
                     elif(e.message == "Helper not started (did you call connect()?)"):
@@ -210,7 +210,7 @@ class BLE_GATEWAY(object):
                         self.device.writeCharacteristic(handle, rate, True)      
                         break
                     except BTLEException as e: 
-                        print e.code, e.message  
+                        module_logger.warning(e.code, e.message)  
                         if(e.code == 1):
                             continue
                         elif(e.message == "Helper not started (did you call connect()?)"):
@@ -219,7 +219,7 @@ class BLE_GATEWAY(object):
                         else:
                             raise                    
                 
-                print "Polling rate updated to ", rate
+                module_logger.info("Polling rate updated to ", rate)
                 self.reset_connection()         
             
     def set_data(self, handle, data):
@@ -228,17 +228,18 @@ class BLE_GATEWAY(object):
             try:
                 self.device.writeCharacteristic(handle, data, True)
             except bluepy.btle.BTLEException as e:
-                print e.code, e.message
+                module_logger.warning(e.code, e.message)
                 if(e.code == 1):
-                    print "BLE disconnected"
+                    module_logger.info("BLE disconnected")
                     self.reconnect_blocking()
                     self.set_delegate()
-                    print "Reconnected"
+                    module_logger.info("Reconnected")
             except:
-                print sys.exc_info()[0]
+                module_logger.error("In set_data: Unknown error caught.")
+                module_logger.exception()
                 raise
                 
-            print "Data set: ", data    
+            module_logger.info("Data set: " + data)    
         
 #     def diagnostic_callback(self, client, userdata, msg):
 #         print "MQTT message received: ", msg.payload, "MQTT topic: ", msg.topic
@@ -273,37 +274,38 @@ class BLE_GATEWAY(object):
 #                 self.reset_connection()
 
     def diagnostic_callback(self, client, userdata, msg):
-        print "MQTT message received: ", msg.payload, "MQTT topic: ", msg.topic
-        print "hasattr(self, thread_type) : ", hasattr(self, 'thread_type')
+        module_logger.debug("MQTT message received: " + msg.payload + "MQTT topic: "+ msg.topic)
+        module_logger.debug("hasattr(self, thread_type) : " + str(hasattr(self, 'thread_type')))
+        module_logger.info("Diagnostic test initiated.")
         if(msg.payload == "test"):
             with self.diagnostic_lock:
                 if(hasattr(self, 'thread_type') == True and self.thread_type == "logger"):
-                    print "in logger"
+                    module_logger.debug("in logger")
                     if(self.connected_event.is_set() == True):
-                        print "set data"
+                        module_logger.debug("set data")
                         self.set_data(63,'1')
                         self.reset_connection()
                     else:
-                        print "Device is not connected. Not running diagnostic."
+                        module_logger.info("Device is not connected. Not running diagnostic.")
                         
                 elif(hasattr(self, 'thread_type') == False or self.thread_type == "updater"):
-                    print 'in updater'
+                    module_logger.debug('in updater')
                     if(self.connected_event.is_set() == True):
-                        print "is connected"
+                        module_logger.debug("is connected")
                         while(self.connected_event.is_set() == True):
                             pass
                         while True:
                             try:
                                 connection = False
                                 self.device = bluepy.btle.Peripheral(self.mac)
-                                print("Connected")
+                                module_logger.info("Connected")
                                 self.connected_event.set()
                                 break
                             except bluepy.btle.BTLEException as e:
     #                             print e.message, e.code
                                 if(e.code == 1):
                                     if(connection == True):
-                                        print("BLE device disconnected.")
+                                        module_logger.info("BLE device disconnected.")
                                         connection = False
                                         self.connected_event.clear()
                                     continue
@@ -311,23 +313,23 @@ class BLE_GATEWAY(object):
                                     raise                         
                         self.set_data(63, '1')
                         self.device.disconnect()
-                        print("Disconnected")
+                        module_logger.info("Disconnected")
                         self.connected_event.clear()
                         time.sleep(3)                       
                     elif(self.connected_event.is_set() == False):
-                        print "not connected"
+                        module_logger.info("Device not connected")
                         while True:
                             try:
                                 connection = False
                                 self.device = bluepy.btle.Peripheral(self.mac)
-                                print("Connected")
+                                module_logger.info("Connected")
                                 self.connected_event.set()
                                 break
                             except bluepy.btle.BTLEException as e:
     #                             print e.message, e.code
                                 if(e.code == 1):
                                     if(connection == True):
-                                        print("BLE device disconnected.")
+                                        module_logger.info("BLE device disconnected.")
                                         connection = False
                                         self.connected_event.clear()
                                     continue
@@ -335,14 +337,14 @@ class BLE_GATEWAY(object):
                                     raise                         
                         self.set_data(63, '1')
                         self.device.disconnect()
-                        print("Disconnected")
+                        module_logger.info("Disconnected")
                         self.connected_event.clear()
                         time.sleep(3)                          
                                 
 class MQTT_GATEWAY(object):
     
     def __init__(self, MQTT_BROKER_ADDRESS, SUBSCRIBE_TOPIC, MQTT_DELEGATE):
-        module_logger.info("Creating MQTT GATEWAY object.")
+        module_logger.debug("Creating MQTT GATEWAY object.")
         self.broker_address = MQTT_BROKER_ADDRESS
         self.subscribe_topic = []        
         if(isinstance(SUBSCRIBE_TOPIC, str) == True):
@@ -351,7 +353,7 @@ class MQTT_GATEWAY(object):
             for topic in SUBSCRIBE_TOPIC:
                 self.subscribe_topic.insert(len(self.subscribe_topic), topic)
         else:
-            print "Invalid data type for SUBSCRIBE_TOPIC"
+            module_logger.warning("Invalid data type for SUBSCRIBE_TOPIC")
             
         self.client = mqtt.Client()
         self.client.on_connect = self.on_connect
@@ -360,7 +362,7 @@ class MQTT_GATEWAY(object):
 #         self.client.loop_forever()    
     
     def on_connect(self, client, userdata, flags, rc):      
-        print("Connected to MQTT Broker with result code "+str(rc))
+        module_logger.info("Connected to MQTT Broker with result code "+str(rc))
         for topic in self.subscribe_topic:
             self.client.subscribe(topic)
             
