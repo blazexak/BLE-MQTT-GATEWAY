@@ -60,7 +60,7 @@ class BLE_delegate(bluepy.btle.DefaultDelegate):
             logger.info("Data: " + data)
             logger.info("Handle: " + str(cHandle))
             
-        self.client.publish(MQTT_PUBLISHING_TOPIC[0], DEVICE_CODE + data)
+        self.client.publish(MQTT_PUBLISHING_TOPIC[0], data)
         
 class MQTT_delegate(object):
     def __init__(self):
