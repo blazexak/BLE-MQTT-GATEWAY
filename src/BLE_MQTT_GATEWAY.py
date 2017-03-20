@@ -394,9 +394,21 @@ class Bluetooth_Multimedia_Gateway(object):
         except:
             print("Exception 1 was thrown.")
             print("Debug information: ")
-            traceback.print_exception()
+            traceback.print_exc()
             print(str(child))
     
+    def set_default_sink_source(self):
+	try:
+            command = "pacmd"
+            child = pexpect.spawn(command)
+            child.logfile = open("/tmp/mylog", "w")
+            child.sendline("set-default-sink bluez_sink.00_00_03_04_28_04")
+	    child.sendline("set-default-source bluez_source.00_00_03_04_28_04")
+	except:
+	    print("Exception 3 was thrown.")
+	    print("Debug information: ")
+            traceback.print_exc()
+	
     def check_default_sink_source(self):
         try:
             command = "pacmd"
@@ -415,5 +427,18 @@ class Bluetooth_Multimedia_Gateway(object):
             print("Exception 2 was thrown.")
             print("Debug information: ")
             traceback.print_exc()
-            print(str(child))    
+            print(str(child))
+	    
+    def disconnect(self):
+        try:
+            command = 'bluetoothctl'
+            child = pexpect.spawn(command)
+            child.logfile = open("/tmp/mylog", "w")
+            child.sendline('disconnect 00:00:03:04:28:04')
+            child.expect("Successful disconnected")
+            child.close()
+        except:
+            print("Exception 4 was thrown.")
+            print("Debug information: ")
+            traceback.print_exc()	
              
