@@ -345,7 +345,7 @@ class BLE_GATEWAY(object):
                                 
 class MQTT_GATEWAY(object):
     
-    def __init__(self, MQTT_BROKER_ADDRESS, SUBSCRIBE_TOPIC, MQTT_DELEGATE):
+    def __init__(self, MQTT_BROKER_ADDRESS, SUBSCRIBE_TOPIC, MQTT_DELEGATE=None):
         module_logger.debug("Creating MQTT GATEWAY object.")
         self.broker_address = MQTT_BROKER_ADDRESS
         self.subscribe_topic = []        

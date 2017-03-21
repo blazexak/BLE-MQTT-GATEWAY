@@ -58,7 +58,7 @@ class BLE_delegate(bluepy.btle.DefaultDelegate):
 		if(cHandle == 51):
 			index = HANDLE.index(cHandle)
 			payload = self.binasciiToString(data)
-			(result, mid) = self.client.publish(MQTT_PUBLISHING_TOPIC[0] , DEVICE_CODE + payload)
+			(result, mid) = self.client.publish(MQTT_PUBLISHING_TOPIC[0] , payload)
 			print "Pubish result: ", result
 			
 		if(VERBOSE == 1):
