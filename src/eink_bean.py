@@ -56,7 +56,7 @@ class MQTT_delegate(object):
                 writer = threading.Thread(target = ble_gateway.data_updater,args=(BLE_HANDLE,eink_msg))
                 writer.start()
                 while( writer.is_alive() == True):
-                    pass
+			time.sleep(1)
                 print "Exit thread"
 
 # Function for splitting message into substring to fit eink's screen size

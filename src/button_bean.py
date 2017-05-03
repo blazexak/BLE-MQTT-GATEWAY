@@ -39,7 +39,7 @@ DEVICE_TYPE = "NULL"
 BLE_DELEGATE_HANDLE = [68]
 HANDLE = [51, 55, 59, 63, 67]
 
-MQTT_SERVER = "192.168.1.9"
+MQTT_SERVER = "127.0.0.1"
 MQTT_SUBSCRIBING_TOPIC = ["bean/button/hsb"]
 MQTT_PUBLISHING_TOPIC = ["bean/button"]
 VERBOSE = 1
@@ -60,7 +60,7 @@ class BLE_delegate(bluepy.btle.DefaultDelegate):
             logger.info("Data: " + data)
             logger.info("Handle: " + str(cHandle))
             
-        self.client.publish(MQTT_PUBLISHING_TOPIC[0], data)
+        self.client.publish(MQTT_PUBLISHING_TOPIC[0], data[0])
         
 class MQTT_delegate(object):
     def __init__(self):

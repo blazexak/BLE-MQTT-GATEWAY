@@ -37,7 +37,7 @@ DEVICE_TYPE = "NULL"
 BLE_DELEGATE_HANDLE = [52,56]
 HANDLE = [51, 55, 59, 63, 67]
 
-MQTT_SERVER = "192.168.1.9"
+MQTT_SERVER = "127.0.0.1"
 MQTT_SUBSCRIBING_TOPIC = ["bean/infared_temperature/rate"]
 MQTT_PUBLISHING_TOPIC = ["tempSensor_bean/object_temp", "tempSensor_bean/ambient_temp"]
 VERBOSE = 1
@@ -90,7 +90,8 @@ if(__name__ == "__main__"):
 		mqtt_delegate.addBLE(ble_gateway)
 		threading.Thread(target=mqtt_gateway.client.loop_forever).start()
 		while True:
-			pass
+			time.sleep(1)
+			
 
 	except KeyboardInterrupt:
 		logger.info("Keyboard Interrupted")
