@@ -11,6 +11,7 @@ import timeit
 import logging
 import logging.config
 from collections import namedtuple
+import yaml
 
 # create module logger
 module_logger = logging.getLogger("exampleApp."+__name__)
@@ -141,7 +142,7 @@ class BLE_GATEWAY(object):
                 return 0
                     
             except bluepy.btle.BTLEException as e:
-#                 print e.message, e.code
+                # print e.message, e.code
                 if(e.code == 1):
                     if(connection == True):
                         module_logger.info("BLE device disconnected.")
@@ -175,7 +176,7 @@ class BLE_GATEWAY(object):
                 self.connected_event.set()
                 break
             except BTLEException as e:
-#                 print e.code, e.message
+                # print e.code, e.message
                 if(e.code == 1):
                     continue
                 else:
@@ -198,8 +199,8 @@ class BLE_GATEWAY(object):
                             continue
                     else:
                         raise       
-#                 except AttributeError as e:
-#                     print "AttributeError: ", str(e)
+                # except AttributeError as e:
+                #     print "AttributeError: ", str(e)
                                    
             
     def set_polling_rate(self, handle, rate):
@@ -242,37 +243,37 @@ class BLE_GATEWAY(object):
                 
             module_logger.info("Data set: " + data)    
         
-#     def diagnostic_callback(self, client, userdata, msg):
-#         print "MQTT message received: ", msg.payload, "MQTT topic: ", msg.topic
-#         with self.diagnostic_lock:
-#             if(self.connected_event.is_set() == False):
-#                 print "Loop 1"
-#                 if(msg.payload == "test"):
-#                     while True:
-#                         try:
-#                             connection = False
-#                             self.device = bluepy.btle.Peripheral(self.mac)
-#                             break
-#                         except bluepy.btle.BTLEException as e:
-# #                             print e.message, e.code
-#                             if(e.code == 1):
-#                                 if(connection == True):
-#                                     print("BLE device disconnected.")
-#                                     connection = False
-#                                     self.connected_event.clear()
-#                                 continue
-#                             else:
-#                                 raise                 
-#                     self.connected_event.set()                
-#                     self.set_data(63, '1')
-#                     self.device.disconnect()
-#                     self.connected_event.clear()
-#                     time.sleep(3)                   
-#             else:
-#                 print "loop 2"
-#                 if(msg.payload == "test"):
-#                     self.set_data(63, '1')
-#                 self.reset_connection()
+    # def diagnostic_callback(self, client, userdata, msg):
+    #     print "MQTT message received: ", msg.payload, "MQTT topic: ", msg.topic
+    #     with self.diagnostic_lock:
+    #         if(self.connected_event.is_set() == False):
+    #             print "Loop 1"
+    #             if(msg.payload == "test"):
+    #                 while True:
+    #                     try:
+    #                         connection = False
+    #                         self.device = bluepy.btle.Peripheral(self.mac)
+    #                         break
+    #                     except bluepy.btle.BTLEException as e:
+    #                         print e.message, e.code
+    #                         if(e.code == 1):
+    #                             if(connection == True):
+    #                                 print("BLE device disconnected.")
+    #                                 connection = False
+    #                                 self.connected_event.clear()
+    #                             continue
+    #                         else:
+    #                             raise                 
+    #                 self.connected_event.set()                
+    #                 self.set_data(63, '1')
+    #                 self.device.disconnect()
+    #                 self.connected_event.clear()
+    #                 time.sleep(3)                   
+    #         else:
+    #             print "loop 2"
+    #             if(msg.payload == "test"):
+    #                 self.set_data(63, '1')
+    #             self.reset_connection()
 
     def diagnostic_callback(self, client, userdata, msg):
         module_logger.debug("MQTT message received: " + msg.payload + "MQTT topic: "+ msg.topic)
@@ -362,7 +363,7 @@ class MQTT_GATEWAY(object):
         self.client.on_connect = self.on_connect
         self.client.on_message = MQTT_DELEGATE
         self.client.connect(self.broker_address, 1883,60)
-#         self.client.loop_forever()    
+        # self.client.loop_forever()    
     
     def on_connect(self, client, userdata, flags, rc):      
         module_logger.info("Connected to MQTT Broker with result code "+str(rc))
@@ -550,3 +551,41 @@ class Bluetooth_Multimedia_Gateway(object):
             print("Debug information: ")
             traceback.print_exc()	
              
+'''
+ BLE Advertisement Gateway class
+    - scan for nearby advertisement
+    - filter out advertisement based on a log file
+    - publish it through MQTT topics in the log file
+'''
+class BLE_ADVERTISEMENT_GATEWAY(object):
+
+
+    def __init__(self):
+        pass
+
+    def minor(self, data):
+        return str(int(data[-6:-2], 16))
+    
+    def minor_low(self,data):
+        return str(int(data[-4:-2], 16))
+    
+    def minor_high(self,data):
+        return str(int(data[-6:-4], 16))
+    
+    def rssi(self,data):
+        return str(int(data[-2::], 16))
+
+    '''
+    params: yaml_file that consists of the iBeacon device information
+    return: a dictionary with length equals to number of devices in the yaml file.
+            Each device's name represents a key in the dictionary which consists of three
+            mqtt topic, mac address and name.
+    '''    
+    def load_configuration_file(self, yaml_file):
+        with  open(yaml_file, 'r') as stream:
+            try:
+                beacons = (yaml.load(stream))
+            except yaml.YAMLError as exc:
+                print(exc)
+
+        return beacons

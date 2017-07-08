@@ -8,6 +8,7 @@ import time
 import logging
 import logging.config
 import traceback
+import re
 from DEVICE import Bluetooth_Speaker_Mic
 
 fullpath = os.path.abspath(sys.argv[0])
@@ -37,8 +38,8 @@ DEVICE_TYPE = "NULL"
 PLAYBACK_DIR = "/home/pi/git-repos/BLE-MQTT-GATEWAY/audio/dir1/"
 RECORD_DIR = "/home/pi/git-repos/BLE-MQTT-GATEWAY/audio/dir2/"
 
-MQTT_SERVER = "192.168.1.9"
-MQTT_SUBSCRIBING_TOPIC = ["multimedia/speaker", "multimedia/microphone"]
+MQTT_SERVER = "127.0.0.1"
+MQTT_SUBSCRIBING_TOPIC = ["multimedia/speaker", "multimedia/microphone/#"]
 MQTT_PUBLISHING_TOPIC = ["multimedia/message_box", "multimedia/recording_event", "multimedia/playback_event"]
 RECORDING_TIME = 30
 VERBOSE = 0
@@ -57,16 +58,25 @@ class MQTT_delegate(object):
             if(multimedia_event.is_set() == False):
                 multimedia_event.set()
                 self.multimedia.playback(DELETE = True, CLIENT=client, TOPIC=MQTT_PUBLISHING_TOPIC[2])
-                f = self.multimedia.file_available(PLAYBACK_DIR)
+                f = self.multimedia.file_availablBLEe(PLAYBACK_DIR)
                 if(f == False):
                     client.publish("multimedia/message_box", '0')
                 multimedia_event.clear()
                 print "End"
-        elif(msg.topic == "multimedia/microphone"):
+        elif(re.match("multimedia/microphone/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}", msg.topic) != None):
+            destination_ip = msg.topic.split('/')[2]
+            print destination_ip
             if(multimedia_event.is_set() == False):
                 multimedia_event.set()
                 self.multimedia.record(COUNTDOWN=RECORDING_TIME, IP_ADDRESS = "192.168.1.17", CLIENT=client,TOPIC=MQTT_PUBLISHING_TOPIC[1])
-                multimedia_event.clear()
+                multimedia_event.clear()        
+        elif(msg.topic == "multimedia/microphone"):
+            if(multimedia_event.is_set() == False):
+                multimedia_event.set()
+                self.multimedia.record(COUNTDOWN=RECORDING_TIME, CLIENT=client,TOPIC=MQTT_PUBLISHING_TOPIC[1])
+                multimedia_event.clear()   
+        else:
+        	print "Else" 
                 
 def audio_check_thread(client, multimedia, delay):
     while True:
