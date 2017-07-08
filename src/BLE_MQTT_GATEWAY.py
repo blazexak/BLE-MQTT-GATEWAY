@@ -11,7 +11,10 @@ import timeit
 import logging
 import logging.config
 from collections import namedtuple
+<<<<<<< HEAD
 import yaml
+=======
+>>>>>>> e17db0260df0dd384eb68b5754d153eda064423e
 
 # create module logger
 module_logger = logging.getLogger("exampleApp."+__name__)
