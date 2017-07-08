@@ -1,4 +1,8 @@
 # YAML
+<<<<<<< HEAD
+
+=======
+>>>>>>> master
 AB Soil Moisture Sensor1:
     name: Soil_Moisture_Sensor
     mac_add: "12:3b:6a:1a:95:AC"
