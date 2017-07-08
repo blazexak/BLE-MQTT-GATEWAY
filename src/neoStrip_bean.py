@@ -57,7 +57,7 @@ class MQTT_delegate(object):
                     writer = threading.Thread(target = ble_gateway.data_updater,args=(BLE_HANDLE[0],msg.payload))
                     writer.start()
                     while( writer.is_alive() == True):
-                        pass
+			time.sleep(0.001)
                     print "Exit thread"
                     
         elif(msg.topic == MQTT_SUBSCRIBING_TOPIC[1]):
@@ -65,7 +65,7 @@ class MQTT_delegate(object):
                 writer = threading.Thread(target = ble_gateway.data_updater,args=(BLE_HANDLE[4],msg.payload))
                 writer.start()
                 while( writer.is_alive() == True):
-                    pass
+			time.sleep(0.001)
                 print "Exit thread"            
  
 # Function for checking HSV string format: "HHH,SSS,BBB"
@@ -112,8 +112,7 @@ if(__name__ == "__main__"):
         mqtt_delegate.addBLE(ble_gateway)
         threading.Thread(target=mqtt_gateway.client.loop_forever).start()
         while True:
-            pass
-
+		time.sleep(1)
     except KeyboardInterrupt:
         mqtt_gateway.client.disconnect()
         sys.exit()

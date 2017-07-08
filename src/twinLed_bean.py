@@ -36,7 +36,7 @@ MAC_ADDRESS = "04:A3:16:9B:0E:DB"
 DEVICE_TYPE = "NULL"
 BLE_HANDLE = [51, 55, 59, 63, 67]
 
-MQTT_SERVER = "192.168.1.9"
+MQTT_SERVER = "127.0.0.1"
 MQTT_SUBSCRIBING_TOPIC = ["bean/twinLed/1", "bean/twinLed/2"]
 VERBOSE = 0
 BLE_lock = threading.Lock()
@@ -64,8 +64,7 @@ if(__name__ == "__main__"):
         mqtt_delegate.addBLE(ble_gateway)
         multiprocessing.Process(target=mqtt_gateway.client.loop_forever).start()
         while True:
-            pass
-
+	    time.sleep(1)
     except KeyboardInterrupt:
         mqtt_gateway.client.disconnect()
         sys.exit()

@@ -12,9 +12,13 @@ import logging
 import logging.config
 from collections import namedtuple
 <<<<<<< HEAD
+<<<<<<< HEAD
 import yaml
 =======
 >>>>>>> e17db0260df0dd384eb68b5754d153eda064423e
+=======
+import yaml
+>>>>>>> master
 
 # create module logger
 module_logger = logging.getLogger("exampleApp."+__name__)
@@ -591,5 +595,9 @@ class BLE_ADVERTISEMENT_GATEWAY(object):
             except yaml.YAMLError as exc:
                 print(exc)
 
+<<<<<<< HEAD
         return beacons
         
+=======
+        return beacons
+>>>>>>> master

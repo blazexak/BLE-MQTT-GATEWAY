@@ -92,7 +92,7 @@ if(__name__ == "__main__"):
         mqtt_delegate.addBLE(ble_gateway)
         threading.Thread(target=mqtt_gateway.client.loop_forever).start()
         while True:
-            pass
+            time.sleep(1)
 
     except KeyboardInterrupt:
         logger.info("Keyboard Interrupted")
