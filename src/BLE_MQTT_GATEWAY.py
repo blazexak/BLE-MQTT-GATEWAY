@@ -10,6 +10,8 @@ from bluepy.btle import BTLEException
 import timeit
 import logging
 import logging.config
+from collections import namedtuple
+import yaml
 
 # create module logger
 module_logger = logging.getLogger("exampleApp."+__name__)
@@ -140,7 +142,7 @@ class BLE_GATEWAY(object):
                 return 0
                     
             except bluepy.btle.BTLEException as e:
-#                 print e.message, e.code
+                # print e.message, e.code
                 if(e.code == 1):
                     if(connection == True):
                         module_logger.info("BLE device disconnected.")
@@ -174,7 +176,7 @@ class BLE_GATEWAY(object):
                 self.connected_event.set()
                 break
             except BTLEException as e:
-#                 print e.code, e.message
+                # print e.code, e.message
                 if(e.code == 1):
                     continue
                 else:
@@ -197,8 +199,8 @@ class BLE_GATEWAY(object):
                             continue
                     else:
                         raise       
-#                 except AttributeError as e:
-#                     print "AttributeError: ", str(e)
+                # except AttributeError as e:
+                #     print "AttributeError: ", str(e)
                                    
             
     def set_polling_rate(self, handle, rate):
@@ -241,37 +243,37 @@ class BLE_GATEWAY(object):
                 
             module_logger.info("Data set: " + data)    
         
-#     def diagnostic_callback(self, client, userdata, msg):
-#         print "MQTT message received: ", msg.payload, "MQTT topic: ", msg.topic
-#         with self.diagnostic_lock:
-#             if(self.connected_event.is_set() == False):
-#                 print "Loop 1"
-#                 if(msg.payload == "test"):
-#                     while True:
-#                         try:
-#                             connection = False
-#                             self.device = bluepy.btle.Peripheral(self.mac)
-#                             break
-#                         except bluepy.btle.BTLEException as e:
-# #                             print e.message, e.code
-#                             if(e.code == 1):
-#                                 if(connection == True):
-#                                     print("BLE device disconnected.")
-#                                     connection = False
-#                                     self.connected_event.clear()
-#                                 continue
-#                             else:
-#                                 raise                 
-#                     self.connected_event.set()                
-#                     self.set_data(63, '1')
-#                     self.device.disconnect()
-#                     self.connected_event.clear()
-#                     time.sleep(3)                   
-#             else:
-#                 print "loop 2"
-#                 if(msg.payload == "test"):
-#                     self.set_data(63, '1')
-#                 self.reset_connection()
+    # def diagnostic_callback(self, client, userdata, msg):
+    #     print "MQTT message received: ", msg.payload, "MQTT topic: ", msg.topic
+    #     with self.diagnostic_lock:
+    #         if(self.connected_event.is_set() == False):
+    #             print "Loop 1"
+    #             if(msg.payload == "test"):
+    #                 while True:
+    #                     try:
+    #                         connection = False
+    #                         self.device = bluepy.btle.Peripheral(self.mac)
+    #                         break
+    #                     except bluepy.btle.BTLEException as e:
+    #                         print e.message, e.code
+    #                         if(e.code == 1):
+    #                             if(connection == True):
+    #                                 print("BLE device disconnected.")
+    #                                 connection = False
+    #                                 self.connected_event.clear()
+    #                             continue
+    #                         else:
+    #                             raise                 
+    #                 self.connected_event.set()                
+    #                 self.set_data(63, '1')
+    #                 self.device.disconnect()
+    #                 self.connected_event.clear()
+    #                 time.sleep(3)                   
+    #         else:
+    #             print "loop 2"
+    #             if(msg.payload == "test"):
+    #                 self.set_data(63, '1')
+    #             self.reset_connection()
 
     def diagnostic_callback(self, client, userdata, msg):
         module_logger.debug("MQTT message received: " + msg.payload + "MQTT topic: "+ msg.topic)
@@ -361,7 +363,7 @@ class MQTT_GATEWAY(object):
         self.client.on_connect = self.on_connect
         self.client.on_message = MQTT_DELEGATE
         self.client.connect(self.broker_address, 1883,60)
-#         self.client.loop_forever()    
+        # self.client.loop_forever()    
     
     def on_connect(self, client, userdata, flags, rc):      
         module_logger.info("Connected to MQTT Broker with result code "+str(rc))
@@ -378,6 +380,10 @@ class Bluetooth_Multimedia_Gateway(object):
     def __init__(self, DEVICE_MAC_ADDRESS):
         self.bluetooth_lock = threading.Lock()
         self.mac = DEVICE_MAC_ADDRESS
+	self.Device_Info = namedtuple('Device_Info', 'trusted paired connected')
+	self.device_info = self.Device_Info(trusted=False, paired=False, connected=False)
+	self.Sink_Source = namedtuple('Sink_Source', 'sink_set source_set')
+	self.sink_source_status = self.Sink_Source(sink_set=False, source_set=False)
         
     def multimedia_connect(self, ):
         try:
@@ -397,38 +403,141 @@ class Bluetooth_Multimedia_Gateway(object):
             traceback.print_exc()
             print(str(child))
     
-    def set_default_sink_source(self):
+    def set_default_sink(self):
 	try:
             command = "pacmd"
             child = pexpect.spawn(command)
             child.logfile = open("/tmp/mylog", "w")
             child.sendline("set-default-sink bluez_sink.00_00_03_04_28_04")
-	    child.sendline("set-default-source bluez_source.00_00_03_04_28_04")
+	    self.sink_source_status = self.sink_source_status._replace(sink_set=True)
+	    child.close()
 	except:
-	    print("Exception 3 was thrown.")
+	    self.sink_source_status = self.sink_source_status._replace(sink_set=False)
+	    print("Exception was thrown in set_default_sink().")
 	    print("Debug information: ")
             traceback.print_exc()
-	
+	    
+    def set_default_source(self):
+	try:
+            command = "pacmd"
+            child = pexpect.spawn(command)
+            child.logfile = open("/tmp/mylog", "w")
+	    child.sendline("set-default-source bluez_source.00_00_03_04_28_04")
+	    self.sink_source_status = self.sink_source_status._replace(source_set=True)
+	    child.close
+	except:
+	    self.sink_source_status = self.sink_source_status._replace(source_set=False)
+	    print("Exception was thrown in set_default_source().")
+	    print("Debug information: ")
+            traceback.print_exc()
+	    	
     def check_default_sink_source(self):
         try:
             command = "pacmd"
             child = pexpect.spawn(command)
             child.logfile = open("/tmp/mylog", "w")
             child.sendline("stat")
-            code1 = child.expect("Default sink name: bluez_sink.00_00_03_04_28_04")#\r\n", pexpect.TIMEOUT)
-            code2 = child.expect("Default source name: bluez_source.00_00_03_04_28_04")#, pexpect.TIMEOUT)
-            child.close
+	    
+	    try:
+		code1 = child.expect("Default sink name: bluez_sink.00_00_03_04_28_04")#\r\n", pexpect.TIMEOUT)
+		self.sink_source_status = self.sink_source_status._replace(sink_set=True)
+	    except:
+		self.sink_source_status = self.sink_source_status._replace(sink_set=False)
+		print("Check: Not default sink")		
+
+	    try:
+		code2 = child.expect("Default source name: bluez_sink.00_00_03_04_28_04.monitor")#, pexpect.TIMEOUT)
+		self.sink_source_status = self.sink_source_status._replace(sink_set=True)
+	    except:
+		self.sink_source_status = self.sink_source_status._replace(sink_set=False)
+		print("Check: Not default source")				
             
-            if(code1 == 0 and code2 == 0):
-                return True
-            else:
-                return False
+            child.close
+
         except:
-            print("Exception 2 was thrown.")
+            print("Exception was thrown in check_default_sink_source().")
             print("Debug information: ")
             traceback.print_exc()
-            print(str(child))
 	    
+    def check_info(self):
+        try:
+            command = 'bluetoothctl'
+            child = pexpect.spawn(command)
+            child.logfile = open("/tmp/mylog", "w")
+            child.sendline('info ' + self.mac)
+	    
+	    try:
+		code2 = child.expect("Paired: yes")
+		self.device_info = self.device_info._replace(paired=True)
+	    except pexpect.exceptions.TIMEOUT as e:
+		print "Check: Paired: False"
+		self.device_info = self.device_info._replace(paired=False)
+						    
+	    try:
+		code1 = child.expect("Trusted: yes")
+		self.device_info = self.device_info._replace(trusted=True)
+	    except pexpect.exceptions.TIMEOUT as e:
+		print "Check: Trusted: False"
+		self.device_info = self.device_info._replace(trusted=False)
+
+	    try:
+		code3 = child.expect("Connected: yes")
+		self.device_info = self.device_info._replace(connected=True)
+	    except pexpect.exceptions.TIMEOUT as e:
+		print "Connected: False"
+		self.device_info = self.device_info._replace(connected=False)
+	    
+            child.close()
+        except:
+            print("Exception in check_info().")
+            print("Debug")
+	    traceback.print_exc()
+		
+    def trust(self):
+        try:
+            command = 'bluetoothctl'
+            child = pexpect.spawn(command)
+            child.logfile = open("/tmp/mylog", "w")
+            child.sendline('trust ' + self.mac)
+            child.expect("trust succeeded")
+            child.close()
+	    self.device_info = self.device_info._replace(trusted=True)
+        except:
+            print("Exception was thrown in trust().")
+            print("Debug information: ")
+            traceback.print_exc()
+	    self.device_info = self.device_info._replace(trusted=False)
+	    
+    def pair(self):
+        try:
+            command = 'bluetoothctl'
+            child = pexpect.spawn(command)
+            child.logfile = open("/tmp/mylog", "w")
+            child.sendline('pair ' + self.mac)
+            child.expect("pair succeeded")
+            child.close()
+	    self.device_info = self.device_info._replace(paired=True)
+        except:
+            print("Exception was thrown in pair().")
+            print("Debug information: ")
+            traceback.print_exc()	 
+	    self.device_info = self.device_info._replace(paired=False)   
+
+    def connect(self):
+        try:
+            command = 'bluetoothctl'
+            child = pexpect.spawn(command)
+            child.logfile = open("/tmp/mylog", "w")
+            child.sendline('connect ' + self.mac)
+            child.expect("Connection successful")
+            child.close()
+	    self.device_info = self.device_info._replace(connected=True)
+        except:
+	    self.device_info = self.device_info._replace(connected=False)
+            print("Exception was thrown in connect().")
+            print("Debug information: ")
+            traceback.print_exc()
+	    		
     def disconnect(self):
         try:
             command = 'bluetoothctl'
@@ -438,7 +547,46 @@ class Bluetooth_Multimedia_Gateway(object):
             child.expect("Successful disconnected")
             child.close()
         except:
-            print("Exception 4 was thrown.")
+            print("Exception in disconnect().")
             print("Debug information: ")
             traceback.print_exc()	
              
+'''
+ BLE Advertisement Gateway class
+    - scan for nearby advertisement
+    - filter out advertisement based on a log file
+    - publish it through MQTT topics in the log file
+'''
+class BLE_ADVERTISEMENT_GATEWAY(object):
+
+
+    def __init__(self):
+        pass
+
+    def minor(self, data):
+        return str(int(data[-6:-2], 16))
+    
+    def minor_low(self,data):
+        return str(int(data[-4:-2], 16))
+    
+    def minor_high(self,data):
+        return str(int(data[-6:-4], 16))
+    
+    def rssi(self,data):
+        return str(int(data[-2::], 16))
+
+    '''
+    params: yaml_file that consists of the iBeacon device information
+    return: a dictionary with length equals to number of devices in the yaml file.
+            Each device's name represents a key in the dictionary which consists of three
+            mqtt topic, mac address and name.
+    '''    
+    def load_configuration_file(self, yaml_file):
+        with  open(yaml_file, 'r') as stream:
+            try:
+                beacons = (yaml.load(stream))
+            except yaml.YAMLError as exc:
+                print(exc)
+
+        return beacons
+        

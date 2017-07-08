@@ -1,0 +1,34 @@
+# YAML
+
+AB Soil Moisture Sensor1:
+    name: Soil_Moisture_Sensor
+    mac_add: "12:3b:6a:1a:95:AC"
+    mqtt_topics:
+        - 
+         - Moisture
+         - True   
+        - 
+         - Temperature
+         - True
+
+AB Soil Moisture Sensor:
+    name: Soil_Moisture_Sensor
+    mac_add: "12:3b:6a:1a:75:3e"
+    mqtt_topics:
+        - 
+         - Moisture
+         - True   
+        - 
+         - Temperature
+         - True
+
+AB Temperature Sensor:
+    name: Temperature_Sensor
+    mac_add: "12:3B:6A:1A:BF:18"
+    mqtt_topics:
+        - 
+         - Battery
+         - False   
+        - 
+         - Temperature
+         - False 
