@@ -14,3 +14,15 @@ sudo pip install paho-mqtt bluepy pexpect
 ```
 sudo systemctl enable nodered.service
 ```
+
+### Run Hcitool without sudo
+
+```
+sudo apt-get install libcap2-bin
+sudo setcap 'cap_net_raw,cap_net_admin+eip' `which hcitool`
+getcap !$
+```
+Check using:
+```
+hcitool -i hci0 lescan
+```
