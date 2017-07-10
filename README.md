@@ -6,4 +6,4 @@ Install Denpendancies Library:
 
 sudo apt-get install mosquitto mosquitto-clients libglib2.0-dev
 
-sudo pip install paho-mqtt bluepy
+sudo pip install paho-mqtt bluepy pexpect
