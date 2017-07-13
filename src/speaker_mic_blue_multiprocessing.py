@@ -32,14 +32,15 @@ if(len(sys.argv) == 2 and sys.argv[1] == "test"):
 elif(len(sys.argv) == 1):
     time.sleep(120)
 
-DEVICE_NAME = "Bluetooth Speaker MPHBS01"
-MAC_ADDRESS = "00:00:01:04:33:71"
-DEVICE_TYPE = "NULL"
-PLAYBACK_DIR = "/home/pi/git-repos/BLE-MQTT-GATEWAY/audio/dir1/"
-RECORD_DIR = "/home/pi/git-repos/BLE-MQTT-GATEWAY/audio/dir2/"
+DEVICE_NAME     = "Bluetooth Speaker MPHBS01"
+MAC_ADDRESS     = "00:00:01:04:33:71"
+DEVICE_TYPE     = "NULL"
+PLAYBACK_DIR    = "/home/pi/git-repos/BLE-MQTT-GATEWAY/audio/dir1/"
+RECORD_DIR      = "/home/pi/git-repos/BLE-MQTT-GATEWAY/audio/dir2/"
+TONE_DIR        = "/home/pi/git-repos/BLE-MQTT-GATEWAY/audio/tone/"
 
 MQTT_SERVER = "127.0.0.1"
-MQTT_SUBSCRIBING_TOPIC = ["multimedia/speaker", "multimedia/microphone/#"]
+MQTT_SUBSCRIBING_TOPIC = ["multimedia/speaker/#", "multimedia/microphone/#"]
 MQTT_PUBLISHING_TOPIC = ["multimedia/message_box", "multimedia/recording_event", "multimedia/playback_event"]
 RECORDING_TIME = 30
 VERBOSE = 0
@@ -54,15 +55,25 @@ class MQTT_delegate(object):
             
     def handleNotification(self, client, uerdata, msg):
         logger.info(msg.topic+" "+str(msg.payload))
-        if(msg.topic == "multimedia/speaker"):
+        # if sub-topic is "playback", speaker will play audio recordings from PLAYBACK_DIR
+        if(msg.topic == "multimedia/speaker/playback"):
             if(multimedia_event.is_set() == False):
                 multimedia_event.set()
                 self.multimedia.playback(DELETE = True, CLIENT=client, TOPIC=MQTT_PUBLISHING_TOPIC[2])
-                f = self.multimedia.file_availablBLEe(PLAYBACK_DIR)
+                f = self.multimedia.directory_hasFile(PLAYBACK_DIR)
                 if(f == False):
                     client.publish("multimedia/message_box", '0')
                 multimedia_event.clear()
                 print "End"
+        # if sub-topic is "tone/*", speaker will play the '*.wav' tone from TONE_DIR
+        elif(re.match("multimedia/speaker/tone/.*", msg.topic) != None):
+            tone = msg.topic.split('/')[3]
+            if(multimedia_event.is_set() == False):
+                multimedia_event.set()
+                self.multimedia.play(TONE_DIR + tone + ".wav")
+                print "Clearing semaphore."
+                multimedia_event.clear()
+        # if sub-topic is "microphone/IP_ADDRESS", recording will be send through scp to the IP_ADDRESS
         elif(re.match("multimedia/microphone/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}", msg.topic) != None):
             destination_ip = msg.topic.split('/')[2]
             print destination_ip
@@ -70,18 +81,19 @@ class MQTT_delegate(object):
                 multimedia_event.set()
                 self.multimedia.record(COUNTDOWN=RECORDING_TIME, IP_ADDRESS = "192.168.1.17", CLIENT=client,TOPIC=MQTT_PUBLISHING_TOPIC[1])
                 multimedia_event.clear()        
+        # if sub-topic is "microphone", recording will be save to BUFFER_DIR
         elif(msg.topic == "multimedia/microphone"):
             if(multimedia_event.is_set() == False):
                 multimedia_event.set()
                 self.multimedia.record(COUNTDOWN=RECORDING_TIME, CLIENT=client,TOPIC=MQTT_PUBLISHING_TOPIC[1])
                 multimedia_event.clear()   
         else:
-        	print "Else" 
+        	print "Unknow sub-topic received." 
                 
 def audio_check_thread(client, multimedia, delay):
     while True:
         try:
-            f = multimedia.file_available(PLAYBACK_DIR)
+            f = multimedia.directory_hasFile(PLAYBACK_DIR)
             if(f == False):
                 client.publish("multimedia/message_box", '0')
             elif(f == True):
@@ -104,7 +116,7 @@ if(__name__ == "__main__"):
         print("Thread started.")
         
         while True:
-            pass
+            time.sleep(0.001)
 
     except KeyboardInterrupt:
         mqtt_gateway.client.disconnect()

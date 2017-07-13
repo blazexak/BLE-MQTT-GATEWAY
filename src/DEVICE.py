@@ -34,11 +34,30 @@ class Bluetooth_Speaker_Mic(object):
 		d = os.path.dirname(self.record_dir)
 		if not os.path.exists(d):
 			os.makedirs(d)			
-		
+
+	'''
+	params: 
+	return:
+	'''		
+	def play(self, AUDIO_DIR):
+		'''
+		safe call as compared to default "aplay"
+		it checks whether at time of execution any "aplay" is running, does not play
+		audio if "aplay" has been executed prior
+		'''
+		aplay_status = self.subprocess_check_initiate("aplay")
+		if(aplay_status == 0 and os.path.isfile(AUDIO_DIR)):
+			print "playing " + AUDIO_DIR
+			subprocess.call(self.half_volume.split())	
+			subprocess.call(["aplay", AUDIO_DIR])					
+			subprocess.call(self.full_volume.split())
+		else:
+			print "No audio available or Another speaker is busy."
+
 	def playback(self, DELETE=None, CLIENT=None, TOPIC=None):
 		aplay_status = self.subprocess_check_initiate("aplay", "NULL", CLIENT, TOPIC)
 		if(aplay_status == 0):
-			f = self.files_in_directory(self.play_dir)
+			f = self.sort_files_in_directory(self.play_dir)
 			if (f != -1):
 				if(CLIENT!=None and TOPIC!=None):
 					code = CLIENT.publish(TOPIC, '1')
@@ -65,7 +84,11 @@ class Bluetooth_Speaker_Mic(object):
 			subprocess.call(self.half_volume.split())	
 			subprocess.call(self.chime.split())
 			subprocess.call(self.full_volume.split())
-			subprocess.Popen(["arecord", "-f", "dat", self.buffer_dir+f])
+			# Uncomment for saving to buffer directory for application where recording is needed to be send remotely
+			# subprocess.Popen(["arecord", "-f", "dat", self.buffer_dir+f])
+
+			# Recording is saved to local PLAYBACK_DIR for local record and playback application
+			subprocess.Popen(["arecord", "-f", "dat", self.play_dir+f])
 			
 			with self.recording_lock:
 				threading.Thread(target = self.countdown_kill, args = ("arecord", COUNTDOWN, CLIENT, TOPIC,IP_ADDRESS,f)).start()
@@ -81,7 +104,7 @@ class Bluetooth_Speaker_Mic(object):
 		if not os.path.exists(d):
 			os.makedirs(d)
 	
-	def files_in_directory(self, DIRECTORY):
+	def sort_files_in_directory(self, DIRECTORY):
 		files = os.listdir(DIRECTORY)
 		files.sort()	
 		num = (len(files))
@@ -91,7 +114,7 @@ class Bluetooth_Speaker_Mic(object):
 		else:
 			return -1	
 			
-	def file_available(self, DIRECTORY):
+	def directory_hasFile(self, DIRECTORY):
 		try:
 			f = os.listdir(DIRECTORY)
 			length = len(f)
@@ -110,10 +133,11 @@ class Bluetooth_Speaker_Mic(object):
 	# Check for existing process specified by "process_name"
 	# Return 0: If no process was found
 	# Return -1: Processes were found and terminate all processes		
-	def subprocess_check_initiate(self,PROCESS_NAME, DEVICE_NAME, CLIENT, TOPIC):
+	def subprocess_check_initiate(self,PROCESS_NAME, DEVICE_NAME=None, CLIENT=None, TOPIC=None):
 		try:
 			pidID = subprocess.check_output(["pidof", PROCESS_NAME]).split()
-			CLIENT.publish(TOPIC, '0')
+			if(CLIENT != None and TOPIC != None):
+				CLIENT.publish(TOPIC, '0')
 			x = 0
 			for x in range(len(pidID)):
 				subprocess.call(["kill", pidID[x]]) 
@@ -207,8 +231,8 @@ class Button_Bean(object):
 	def playback(self, DELETE=None):
 		aplay_status = self.subprocess_check_initiate("aplay", "NULL")
 		if(aplay_status == 0):
-			f = self.files_in_directory(self.play_dir)
-			if (f != -1):
+			f = self.directory_hasFile(self.play_dir)
+			if (f == True):
 				subprocess.call(["aplay", self.play_dir+f[0]])
 				if(DELETE == True):
 					subprocess.call(["sudo", "rm", self.play_dir+f[0]])

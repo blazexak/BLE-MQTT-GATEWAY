@@ -31,11 +31,11 @@ elif(len(sys.argv) == 1):
     time.sleep(120)
 
 DEVICE_NAME = "E-Ink Display"
-MAC_ADDRESS = "D0:39:72:C9:99:A2"
+MAC_ADDRESS = "04:A3:16:9B:0D:0D"
 DEVICE_TYPE = "NULL"
 BLE_HANDLE = [51, 55, 59, 63, 67]
 
-MQTT_SERVER = "192.168.1.9"
+MQTT_SERVER = "127.0.0.1"
 MQTT_SUBSCRIBING_TOPIC = ["bean/eink"]
 VERBOSE = 0
 BLE_lock = threading.Lock()
