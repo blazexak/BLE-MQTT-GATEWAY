@@ -52,6 +52,7 @@ class Bluetooth_Speaker_Mic(object):
 			subprocess.call(["aplay", AUDIO_DIR])					
 			subprocess.call(self.full_volume.split())
 		else:
+			print "aplay status: " + aplay_status
 			print "No audio available or Another speaker is busy."
 
 	def playback(self, DELETE=None, CLIENT=None, TOPIC=None):
@@ -62,9 +63,9 @@ class Bluetooth_Speaker_Mic(object):
 				if(CLIENT!=None and TOPIC!=None):
 					code = CLIENT.publish(TOPIC, '1')
 					print code
-				subprocess.call(self.half_volume.split())
-				subprocess.call(self.chime.split())				
-				subprocess.call(self.full_volume.split())
+				# subprocess.call(self.half_volume.split())
+				# subprocess.call(self.chime.split())				
+				# subprocess.call(self.full_volume.split())
 				subprocess.call(["aplay", self.play_dir+f[0]])
 				if(CLIENT!=None and TOPIC!=None):
 					CLIENT.publish(TOPIC, '0')
@@ -81,9 +82,9 @@ class Bluetooth_Speaker_Mic(object):
 			if(CLIENT!=None and TOPIC!=None):
 				CLIENT.publish(TOPIC, '1')
 # 				CLIENT.publish("bean/button/hsb", "000,255,100")
-			subprocess.call(self.half_volume.split())	
-			subprocess.call(self.chime.split())
-			subprocess.call(self.full_volume.split())
+			# subprocess.call(self.half_volume.split())	
+			# subprocess.call(self.chime.split())
+			# subprocess.call(self.full_volume.split())
 			# Uncomment for saving to buffer directory for application where recording is needed to be send remotely
 			# subprocess.Popen(["arecord", "-f", "dat", self.buffer_dir+f])
 

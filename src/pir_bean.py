@@ -74,9 +74,6 @@ class MQTT_delegate(object):
 			
 	def handleNotification(self, client, uerdata, msg):
 		logger.info(msg.topic+" "+str(msg.payload))
-		
-		if(msg.topic == MQTT_SUBSCRIBING_TOPIC[0]):
-			self.ble_gateway.set_polling_rate(HANDLE[4], msg.payload) 
 
 if(__name__ == "__main__"):
 	try:

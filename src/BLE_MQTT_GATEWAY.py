@@ -222,7 +222,7 @@ class BLE_GATEWAY(object):
                         else:
                             raise                    
                 
-                module_logger.info("Polling rate updated to ", rate)
+                module_logger.info("Polling rate updated to " + rate)
                 self.reset_connection()         
             
     def set_data(self, handle, data):
