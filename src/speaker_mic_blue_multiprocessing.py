@@ -52,9 +52,21 @@ class MQTT_delegate(object):
     
     def addMultimedia(self, MULTIMEDIA):
         self.multimedia = MULTIMEDIA
+        self.recording_event = self.multimedia.recording_event
+        self.recording_sigkill = self.multimedia.recording_sigkill
             
     def handleNotification(self, client, uerdata, msg):
         logger.info(msg.topic+" "+str(msg.payload))
+        if(multimedia_event.is_set() == False):
+            t = threading.Thread(target=self.multimedia_callback, args=(client, uerdata, msg,))
+            t.start()
+        elif(self.recording_event.is_set() == True):
+            self.recording_sigkill.set()
+            logger.info("Sending SIGKILL TO multimedia.countdown...")
+        else:
+            logger.info("Multimedia resource is currently not available. Exiting callback...")
+
+    def multimedia_callback(self, client, uerdata, msg):
         # if sub-topic is "playback", speaker will play audio recordings from PLAYBACK_DIR
         if(msg.topic == "multimedia/speaker/playback"):
             if(multimedia_event.is_set() == False):
@@ -83,10 +95,13 @@ class MQTT_delegate(object):
                 multimedia_event.clear()        
         # if sub-topic is "microphone", recording will be save to BUFFER_DIR
         elif(msg.topic == "multimedia/microphone"):
+            # If aplay and arecord is not running
             if(multimedia_event.is_set() == False):
                 multimedia_event.set()
-                self.multimedia.record(COUNTDOWN=RECORDING_TIME, CLIENT=client,TOPIC=MQTT_PUBLISHING_TOPIC[1])
-                multimedia_event.clear()   
+                self.multimedia.record(COUNTDOWN=RECORDING_TIME, CLIENT=client,
+                            TOPIC=MQTT_PUBLISHING_TOPIC[1])
+                multimedia_event.clear()
+
         else:
         	print "Unknow sub-topic received." 
                 
@@ -116,7 +131,7 @@ if(__name__ == "__main__"):
         print("Thread started.")
         
         while True:
-            time.sleep(0.001)
+            time.sleep(1)
 
     except KeyboardInterrupt:
         mqtt_gateway.client.disconnect()

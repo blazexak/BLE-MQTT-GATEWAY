@@ -19,8 +19,8 @@ class Bluetooth_Speaker_Mic(object):
 		self.play_dir = PLAYBACK_DIR
 		self.record_dir = RECORD_DIR
 		self.buffer_dir = "/home/pi/git-repos/BLE-MQTT-GATEWAY/audio/"
-		self.recording_event = threading.Event()	
-		self.recording_lock = threading.Lock()
+		self.recording_sigkill = threading.Event()	
+		self.recording_event = threading.Event()
 		
 		
 		self.chime = "aplay /home/pi/Downloads/chime.wav"
@@ -88,18 +88,33 @@ class Bluetooth_Speaker_Mic(object):
 			# Uncomment for saving to buffer directory for application where recording is needed to be send remotely
 			# subprocess.Popen(["arecord", "-f", "dat", self.buffer_dir+f])
 
-			# Recording is saved to local PLAYBACK_DIR for local record and playback application
-			subprocess.Popen(["arecord", "-f", "dat", self.play_dir+f])
-			
-			with self.recording_lock:
-				threading.Thread(target = self.countdown_kill, args = ("arecord", COUNTDOWN, CLIENT, TOPIC,IP_ADDRESS,f)).start()
-				print "out"
-				self.recording_event.clear()
-			#print("Lock released after countdown.")
+			# New logic state
+			# Start the countdown as a thread
+			# Start aplay as a blocking call
+			threading.Thread(target = self.countdown_kill,
+				args = ("arecord", COUNTDOWN, CLIENT, TOPIC,IP_ADDRESS,f)).start()
 
-		if(arecord_status == -1):
-			self.recording_event.set()						  
-						
+			self.recording_event.set()
+			subprocess.call(["arecord", "-f", "dat", self.buffer_dir+f])
+			self.recording_event.clear()
+			self.recording_sigkill.clear()
+			print "out"
+			# Recording is saved to local PLAYBACK_DIR for local record and playback application
+
+			### Old Code (Commenting out to test new logic state)
+
+			# subprocess.Popen(["arecord", "-f", "dat", self.play_dir+f])
+			
+			# with self.recording_lock:
+			# 	threading.Thread(target = self.countdown_kill, args = ("arecord", COUNTDOWN, CLIENT, TOPIC,IP_ADDRESS,f)).start()
+			# 	print "out"
+			# 	self.recording_event.clear()
+
+
+
+		# if(arecord_status == -1):
+		# 	self.recording_event.set()						  
+		### End of old code				
 	def set_directory(self, DIR):
 		d = os.path.dirname(DIR)
 		if not os.path.exists(d):
@@ -157,8 +172,8 @@ class Bluetooth_Speaker_Mic(object):
 			#print "Countdown thread started."
 			for x in range(COUNTDOWN):
 				time.sleep(1)
-				print x, self.recording_event.is_set()
-				if(self.recording_event.is_set() == True):
+				print x, self.recording_sigkill.is_set()
+				if(self.recording_sigkill.is_set() == True):
 					print "External event signal received. ", PROCESS_NAME, " killed"
 					break
 			#if(self.recording_event.is_set() != True):
@@ -170,12 +185,11 @@ class Bluetooth_Speaker_Mic(object):
 			#print PROCESS_NAME + " killed"
 			
 			
-			print "Sending audio file to ", IP_ADDRESS
 			if(IP_ADDRESS != None):
 				try:
+					print "Sending audio file to ", IP_ADDRESS
 					socket.inet_aton(IP_ADDRESS)
-					with self.recording_lock:
-						self.file_transfer(f, IP_ADDRESS) 
+					self.file_transfer(f, IP_ADDRESS) 
 				except socket.error:
 					raise TypeError	
 		
@@ -184,132 +198,11 @@ class Bluetooth_Speaker_Mic(object):
 			if(IP_ADDRESS != None):
 				try:
 					socket.inet_aton(IP_ADDRESS)
-					with self.recording_lock:
-						self.file_transfer(f, IP_ADDRESS) 
+					# with self.recording_lock:
+					self.file_transfer(f, IP_ADDRESS) 
 				except socket.error:
 					raise TypeError				
 		except:
 			print "Unknown error caught! Exit!"
 			raise
 		
-class Button_Bean(object):		
-	def __init__(self, MAC_ADDRESS):
-		self.mac = MAC_ADDRESS
-		
-	def check_HSV(self, msg):
-		# Check if msg is in the format: device_name/payload
-		if(msg.find('/') != -1):
-			msg = msg.split('/')[1]
-			# Check for position of comma in HSV string
-			if(len(msg) == 11 and msg.count(',') == 2 and msg.index(',',1,4) == 3 and msg.index(',',5,11) == 7):
-				# Check for H,S,B are all numeric
-				hsv = msg.split(',')
-				if(hsv[0].isdigit() and hsv[1].isdigit() and hsv[2].isdigit()):
-					# Check if HSB are between 0-255
-					if(int(hsv[0]) >= 0 and int(hsv[0]) < 256 and int(hsv[1]) >= 0 and int(hsv[1]) < 256 and int(hsv[2]) >= 0 and int(hsv[2]) < 256 ):
-						return True, msg
-					else:
-						return False, -1
-				else:
-					return False, -2
-			else:
-				return False, -3
-				
-		elif(len(msg) == 11 and msg.count(',') == 2 and msg.index(',',1,4) == 3 and msg.index(',',5,11) == 7):
-			# Check for H,S,B are all numeric
-			hsv = msg.split(',')
-			if(hsv[0].isdigit() and hsv[1].isdigit() and hsv[2].isdigit()):
-				# Check if HSB are between 0-255
-				if(int(hsv[0]) >= 0 and int(hsv[0]) < 256 and int(hsv[1]) >= 0 and int(hsv[1]) < 256 and int(hsv[2]) >= 0 and int(hsv[2]) < 256 ):
-					return True, msg
-				else:
-					return False, -4
-			else:
-				return False, -5
-		else:
-			return False, -6
-		
-	def playback(self, DELETE=None):
-		aplay_status = self.subprocess_check_initiate("aplay", "NULL")
-		if(aplay_status == 0):
-			f = self.directory_hasFile(self.play_dir)
-			if (f == True):
-				subprocess.call(["aplay", self.play_dir+f[0]])
-				if(DELETE == True):
-					subprocess.call(["sudo", "rm", self.play_dir+f[0]])
-			else:
-				print "No audio available."
-		
-	def record(self, COUNTDOWN, IP_ADDRESS=None):
-		self.recording_lock = threading.Lock()
-		arecord_status = self.subprocess_check_initiate("arecord", "NULL")
-		if(arecord_status == -1):
-			self.recording_event.set()
-			print "Recording stopped."
-		if(arecord_status == 0): 
-			f = time.strftime("%Y%m%d%H%M%S") + ".wav"
-			subprocess.Popen(["arecord", "-f", "dat", self.record_dir+f])
-			with self.recording_lock:
-				threading.Thread(target = self.countdown_kill, args = ("arecord", COUNTDOWN, self.recording_event)).start()
-				self.recording_event.clear()
-			print("Lock released after countdown.")
-			if(IP_ADDRESS != None):
-				try:
-					socket.inet_aton(IP_ADDRESS)
-					with self.recording_lock:
-						self.file_transfer(f, IP_ADDRESS) 
-				except socket.error:
-					raise TypeError		   
-
-class SensorTag(object):
-	
-	def __init__(self, bluetooth_adr):
-		self.con = pexpect.spawn('gatttool -b ' + bluetooth_adr + ' --interactive')
-		self.con.expect('\[LE\]>', timeout=600)
-		print "Preparing to connect. You might need to press the side button..."
-		self.con.sendline('connect')
-		self.con.expect('Connection successful.*\[LE\]>')
-		self.cb = {}
-		return
-	
-	def char_write_cmd(self, handle, value):
-		# The 0%x for value is VERY naughty!  Fix this!
-		cmd = 'char-write-cmd 0x%02x 0%x' % (handle, value)
-		print cmd
-		self.con.sendline(cmd)
-		return
-
-	def char_read_hnd(self, handle):
-		self.con.sendline('char-read-hnd 0x%02x' % handle)
-		self.con.expect('descriptor: .*? \r')
-		after = self.con.after
-		rval = after.split()[1:]
-		return [long(float.fromhex(n)) for n in rval]
-	
-	def notification_loop(self):
-		while True:
-			try:
-				pnum = self.con.expect(['Notification handle = .*? \r', "GLib-WARNING"], timeout=4)
-			except:
-				continue
-			
-			if(pnum == 0):
-				after = self.con.after
-				hxstr = after.split()[3:]
-				handle = long(float.fromhex(hxstr[0]))
-				
-				if True:
-					self.cb[handle]([long(float.fromhex(n)) for n in hxstr[2:]])
-				pass
-			
-			elif(pnum == 1):
-				print "Sensor tag resetted."
-				raise
-			else:
-				print "TIMEOUT!!"
-		pass
-	
-	def register_cb( self, handle, fn ):
-		self.cb[handle]=fn;
-		return
-					
