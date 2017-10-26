@@ -15,7 +15,7 @@ The python module in this repository consists of a BLE and MQTT classess for wor
 Below are the dependencies required to set up the MQTT server and BLE on Raspberry Pi. NodeRed is a default package included in the official Raspberry Pi Pixel image.
 
 
-## Install Denpendancies Library for MQTT and MQTT:
+## Install Dependencies Library for MQTT and MQTT:
 ```
 sudo apt-get install mosquitto mosquitto-clients libglib2.0-dev
 sudo pip install paho-mqtt bluepy pexpect pyyaml
@@ -39,3 +39,9 @@ Check using:
 ```
 hcitool -i hci0 lescan
 ```
+# BLE WIRELESS DEVICE (BEAN ARDUINO)
+Each of the wireless BLE sensors and actuators are designed using off the shelf BLE micro-controller from Bean Punch Through.
+https://punchthrough.com/bean/docs/guides/getting-started/intro/ BLE micro-controller uses a proprietary protocol, "GATT" to transfer and receive data by using unique UUID and data storing array. Adafruit has a very good tutorial. https://www.google.com.au/url?sa=t&rct=j&q=&esrc=s&source=web&cd=7&cad=rja&uact=8&ved=0ahUKEwij6fylvo3XAhUKf7wKHdCYAA0QFghLMAY&url=https%3A%2F%2Flearn.adafruit.com%2Fintroduction-to-bluetooth-low-energy%2Fgatt&usg=AOvVaw3ZtbIDSend5GRPIx-wU6az 
+
+In this project, the BLE devices are divided into two categories; wireless sensor and wireless actuator. The wireless sensor periodically check the surrounding environmental reading and save the data to one of the five arrays. Conversely, for the wireless actuator, the device will read instruction/data from one of the five arrays. 
+
