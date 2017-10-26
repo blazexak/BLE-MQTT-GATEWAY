@@ -1,0 +1,5 @@
+This folder contains all the sketches for the Bean arduino board.
+The "libraries" folder contains the dependencies library required
+to compile the sketches. 
+
+#REMEMBER TO MOVE THE "LIRBRARIES" FOLDER TO YOUR LOCAL ARDUINO LIBRARY FOLDER
